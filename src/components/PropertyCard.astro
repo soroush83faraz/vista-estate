@@ -1,0 +1,57 @@
+---
+import type { Property } from '../data/properties';
+import { formatToman, faNum, url } from '../lib/site';
+
+interface Props {
+  property: Property;
+  /** eager برای کارت‌های بالای صفحه */
+  loading?: 'lazy' | 'eager';
+}
+
+const { property: p, loading = 'lazy' } = Astro.props;
+---
+
+<a
+  href={url(`/properties/${p.slug}`)}
+  class="card-zoom group block"
+  data-type={p.type}
+  data-price={p.price}
+  data-area={p.area}
+>
+  <div class="relative aspect-[4/3] overflow-hidden">
+    <img
+      src={url(`/img/props/${p.slug}/cover.jpg`)}
+      alt={p.title}
+      width="800"
+      height="600"
+      loading={loading}
+      decoding="async"
+      class="h-full w-full object-cover"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-night/80 via-transparent to-transparent"></div>
+    <span class="absolute top-4 right-4 rounded-full bg-night/70 px-3 py-1 text-xs text-gold backdrop-blur">
+      {p.type}
+    </span>
+    {
+      p.tour && (
+        <span class="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-gold/90 px-3 py-1 text-xs font-semibold text-night">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <circle cx="12" cy="12" r="9" />
+            <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+          </svg>
+          تور ۳۶۰°
+        </span>
+      )
+    }
+    <div class="absolute inset-x-0 bottom-0 p-5">
+      <h3 class="font-display text-lg font-bold text-ivory">{p.title}</h3>
+      <p class="mt-1 text-xs text-ivory/70">{p.location}</p>
+    </div>
+  </div>
+  <div class="flex items-center justify-between px-5 py-4">
+    <span class="text-sm font-semibold text-gold-bright">{formatToman(p.price)}</span>
+    <span class="text-xs text-muted">
+      {faNum(p.area)} متر · {faNum(p.beds)} خواب
+    </span>
+  </div>
+</a>

@@ -1,0 +1,185 @@
+---
+import Base from '../../layouts/Base.astro';
+import PropertyCard from '../../components/PropertyCard.astro';
+import { PROPERTIES } from '../../data/properties';
+import { SITE, url, formatToman, faNum } from '../../lib/site';
+
+export function getStaticPaths() {
+  return PROPERTIES.map((p) => ({ params: { slug: p.slug }, props: { p } }));
+}
+
+const { p } = Astro.props;
+const related = PROPERTIES.filter((x) => x.slug !== p.slug).slice(0, 3);
+const waText = encodeURIComponent(`سلام، درباره «${p.title}» در سایت ویستا سوال دارم.`);
+
+const SPECS = [
+  { label: 'متراژ', value: `${faNum(p.area)} متر` },
+  { label: 'اتاق خواب', value: faNum(p.beds) },
+  { label: 'سرویس/حمام', value: faNum(p.baths) },
+  { label: 'سال ساخت', value: faNum(p.yearBuilt) },
+] as const;
+---
+
+<Base title={p.title} description={p.excerpt}>
+  <!-- hero: hover reveals the night variant -->
+  <section class="relative">
+    <div class="group relative h-[62svh] min-h-[420px] w-full overflow-hidden">
+      <img
+        src={url(`/img/props/${p.slug}/cover.jpg`)}
+        alt={p.title}
+        class="h-full w-full object-cover"
+        fetchpriority="high"
+        decoding="async"
+      />
+      <img
+        src={url(`/img/props/${p.slug}/night.jpg`)}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1400ms] ease-out group-hover:opacity-100"
+      />
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-night via-night/25 to-night/45"></div>
+
+      <div class="absolute inset-x-0 bottom-0">
+        <div class="container-v pb-10">
+          <a href={url('/properties')} class="mb-4 inline-block text-xs text-gold/90 transition-colors hover:text-gold-bright">
+            → بازگشت به املاک
+          </a>
+          <div class="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <span class="rounded-full bg-night/70 px-3 py-1 text-xs text-gold backdrop-blur">{p.type} · {p.location}</span>
+              <h1 class="font-display mt-3 text-3xl font-extrabold md:text-5xl">{p.title}</h1>
+            </div>
+            <div class="text-left">
+              <div class="text-xs text-muted">قیمت پیشنهادی</div>
+              <div class="font-display mt-1 text-2xl font-bold text-gold-bright md:text-3xl">{formatToman(p.price)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <span class="absolute top-24 left-6 hidden rounded-full bg-night/60 px-3 py-1.5 text-xs text-ivory/70 backdrop-blur transition-opacity duration-500 group-hover:opacity-0 md:block">
+        🌙 برای دیدن نمای شب، نشان‌گر را نگه دارید
+      </span>
+    </div>
+  </section>
+
+  <!-- specs -->
+  <section class="container-v -mt-2 md:-mt-0">
+    <div class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-4" data-reveal>
+      {
+        SPECS.map((s) => (
+          <div class="bg-surface px-6 py-6 text-center">
+            <div class="text-xs text-muted">{s.label}</div>
+            <div class="font-display mt-2 text-xl font-bold text-ivory">{s.value}</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- description + features -->
+  <section class="container-v mt-16 grid gap-12 md:grid-cols-[1.4fr_1fr]">
+    <div>
+      <h2 class="eyebrow mb-4" data-reveal>درباره این ملک</h2>
+      <p class="text-base leading-9 text-ivory/85" data-reveal data-reveal-delay="100">{p.description}</p>
+
+      {
+        p.tour && (
+          <a
+            href={url(`/tour/${p.tour}`)}
+            class="group mt-10 block overflow-hidden rounded-2xl border border-gold/40 bg-surface"
+            data-reveal
+          >
+            <div class="flex items-center justify-between gap-4 p-6">
+              <div>
+                <div class="font-display text-lg font-bold text-gold-bright">تور مجازی ۳۶۰° این ملک آماده است</div>
+                <p class="mt-1 text-sm text-muted">بین فضاها جابه‌جا شوید — مثل موزه لوور، اما روان‌تر.</p>
+              </div>
+              <span class="btn-gold shrink-0 !px-5 !py-2.5 text-sm">ورود به تور</span>
+            </div>
+          </a>
+        )
+      }
+    </div>
+    <aside>
+      <h2 class="eyebrow mb-4" data-reveal>امکانات</h2>
+      <ul class="space-y-3" data-reveal data-reveal-delay="100">
+        {
+          p.features.map((f) => (
+            <li class="flex items-start gap-3 rounded-xl border border-line bg-surface/60 px-4 py-3 text-sm text-ivory/85">
+              <span class="mt-0.5 text-gold">✦</span>
+              {f}
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mt-8 rounded-2xl border border-line bg-surface p-6" data-reveal data-reveal-delay="200">
+        <div class="font-display text-lg font-bold">بازدید حضوری یا مشاوره؟</div>
+        <p class="mt-2 text-sm leading-7 text-muted">مشاور اختصاصی این ملک پاسخ‌گوی شماست.</p>
+        <div class="mt-5 flex flex-col gap-3">
+          <a href={`${SITE.whatsapp}?text=${waText}`} target="_blank" rel="noopener" class="btn-gold justify-center text-sm">
+            گفتگو در واتساپ
+          </a>
+          <a href={SITE.phoneHref} class="btn-ghost justify-center text-sm" dir="ltr">{SITE.phone}</a>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- gallery -->
+  <section class="container-v mt-16">
+    <h2 class="eyebrow mb-6" data-reveal>گالری</h2>
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-3" id="gallery">
+      {
+        Array.from({ length: p.gallery }, (_, i) => (
+          <button
+            class="card-zoom group aspect-[4/3] cursor-zoom-in overflow-hidden"
+            data-full={url(`/img/props/${p.slug}/${i + 1}.jpg`)}
+            aria-label={`عکس ${faNum(i + 1)} از ${p.title}`}
+          >
+            <img
+              src={url(`/img/props/${p.slug}/${i + 1}.jpg`)}
+              alt={`${p.title} — تصویر ${faNum(i + 1)}`}
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <dialog id="lightbox" class="m-auto w-[min(94vw,1100px)] rounded-2xl border border-line bg-night p-2 backdrop:bg-night/90">
+    <img id="lightbox-img" src="" alt="نمای بزرگ" class="max-h-[84vh] w-full rounded-xl object-contain" />
+    <button id="lightbox-close" class="absolute top-4 left-4 rounded-full bg-night/70 px-3 py-1.5 text-sm text-ivory backdrop-blur" aria-label="بستن">
+      ✕
+    </button>
+  </dialog>
+
+  <!-- related -->
+  <section class="container-v mt-24">
+    <h2 class="font-display mb-8 text-2xl font-bold" data-reveal>املاک مشابه</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {related.map((r, i) => <div data-reveal data-reveal-delay={String(i * 100)}><PropertyCard property={r} /></div>)}
+    </div>
+  </section>
+</Base>
+
+<script>
+  const dlg = document.getElementById('lightbox') as HTMLDialogElement;
+  const img = document.getElementById('lightbox-img') as HTMLImageElement;
+  document.querySelectorAll<HTMLButtonElement>('#gallery button').forEach((b) =>
+    b.addEventListener('click', () => {
+      img.src = b.dataset.full!;
+      dlg.showModal();
+    })
+  );
+  document.getElementById('lightbox-close')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+</script>

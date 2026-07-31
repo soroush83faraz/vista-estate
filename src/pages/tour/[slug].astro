@@ -1,0 +1,141 @@
+---
+import Base from '../../layouts/Base.astro';
+import { TOURS } from '../../data/tours';
+import { bySlug } from '../../data/properties';
+import { url } from '../../lib/site';
+
+export function getStaticPaths() {
+  return TOURS.map((t) => ({ params: { slug: t.slug }, props: { t } }));
+}
+
+const { t } = Astro.props;
+const prop = bySlug(t.propSlug)!;
+
+// دیتای موردنیاز ویوئر — مسیرها همین‌جا (سمت سرور) با base کامل می‌شوند
+const tourData = {
+  start: t.start,
+  nodes: t.nodes.map((n) => ({
+    id: n.id,
+    name: n.name,
+    panorama: url(`/img/pano/${t.slug}/${n.pano}`),
+    links: n.links.map((l) => ({ nodeId: l.to, position: { yaw: `${l.yaw}deg`, pitch: '0deg' } })),
+  })),
+};
+---
+
+<Base title={`تور ۳۶۰° ${t.title}`} description={`تور مجازی ${t.title} — بین فضاها جابه‌جا شوید.`}>
+  <section class="relative h-svh w-full">
+    <div id="tour-viewer" class="absolute inset-0"></div>
+
+    <!-- overlay UI -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-night/80 to-transparent pb-16 pt-24">
+      <div class="container-v flex items-center justify-between">
+        <div>
+          <h1 class="font-display text-xl font-bold md:text-2xl">{t.title}</h1>
+          <p class="mt-1 text-xs text-ivory/60">تور مجازی ۳۶۰ درجه — برای جابه‌جایی، روی فلش‌ها کلیک کنید</p>
+        </div>
+        <a href={url(`/properties/${prop.slug}`)} class="btn-ghost pointer-events-auto !px-4 !py-2 text-xs">
+          جزئیات ملک ←
+        </a>
+      </div>
+    </div>
+
+    <!-- room chips -->
+    <nav
+      class="absolute bottom-16 left-1/2 z-20 flex max-w-[92vw] -translate-x-1/2 gap-2 overflow-x-auto rounded-full border border-line bg-night/70 p-1.5 backdrop-blur-xl"
+      aria-label="فضاهای تور"
+      id="room-nav"
+    >
+      {
+        t.nodes.map((n) => (
+          <button
+            class="shrink-0 rounded-full px-4 py-2 text-xs text-ivory/80 transition-colors hover:text-gold-bright data-[active]:bg-gold data-[active]:font-semibold data-[active]:text-night"
+            data-node={n.id}
+          >
+            {n.name}
+          </button>
+        ))
+      }
+    </nav>
+
+    <div
+      id="tour-loading"
+      class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-night"
+      aria-hidden="true"
+    >
+      <div class="h-px w-40 overflow-hidden bg-surface-2">
+        <div class="h-full w-1/3 animate-[loadbar_1.2s_ease-in-out_infinite] bg-gold"></div>
+      </div>
+      <p class="text-xs text-muted">در حال آماده‌سازی تور…</p>
+    </div>
+  </section>
+
+  <script type="application/json" id="tour-data" set:html={JSON.stringify(tourData)} />
+</Base>
+
+<style>
+  @keyframes loadbar {
+    0% { transform: translateX(120%); }
+    100% { transform: translateX(-320%); }
+  }
+  /* PSV RTL نمی‌فهمد — ویوئر داخلش LTR بماند */
+  #tour-viewer {
+    direction: ltr;
+  }
+</style>
+
+<script>
+  import { Viewer } from '@photo-sphere-viewer/core';
+  import { VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin';
+  import '@photo-sphere-viewer/core/index.css';
+  import '@photo-sphere-viewer/virtual-tour-plugin/index.css';
+
+  const data = JSON.parse(document.getElementById('tour-data')!.textContent!);
+
+  const viewer = new Viewer({
+    container: document.getElementById('tour-viewer')!,
+    loadingTxt: '',
+    navbar: ['zoom', 'fullscreen'],
+    lang: { zoom: 'بزرگ‌نمایی', zoomIn: 'بزرگ‌نمایی', zoomOut: 'کوچک‌نمایی', fullscreen: 'تمام‌صفحه' },
+    defaultZoomLvl: 5,
+    mousewheel: true,
+    touchmoveTwoFingers: false,
+    plugins: [
+      [
+        VirtualTourPlugin,
+        {
+          positionMode: 'manual',
+          renderMode: '3d',
+          preload: true,
+          transitionOptions: { speed: '18rpm', effect: 'fade', rotation: true },
+          nodes: data.nodes,
+          startNodeId: data.start,
+        },
+      ],
+    ],
+  });
+
+  const tour = viewer.getPlugin(VirtualTourPlugin) as InstanceType<typeof VirtualTourPlugin>;
+  const loading = document.getElementById('tour-loading')!;
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('#room-nav button')];
+
+  function markActive(id: string) {
+    for (const c of chips) {
+      if (c.dataset.node === id) c.setAttribute('data-active', '');
+      else c.removeAttribute('data-active');
+    }
+  }
+
+  viewer.addEventListener('ready', () => {
+    loading.style.transition = 'opacity .6s ease';
+    loading.style.opacity = '0';
+    setTimeout(() => loading.remove(), 650);
+    markActive(data.start);
+  }, { once: true });
+
+  tour.addEventListener('node-changed', (e: any) => markActive(e.node.id));
+
+  for (const c of chips) {
+    c.addEventListener('click', () => tour.setCurrentNode(c.dataset.node!));
+  }
+</script>

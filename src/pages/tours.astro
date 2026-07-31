@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import { TOURS } from '../data/tours';
+import { bySlug } from '../data/properties';
+import { url, faNum } from '../lib/site';
+---
+
+<Base title="تور مجازی" description="تورهای ۳۶۰ درجه ویستا — پیش از بازدید حضوری، داخل ملک قدم بزنید.">
+  <section class="container-v pt-32 md:pt-40">
+    <p class="eyebrow mb-3" data-reveal>تجربه ویستا</p>
+    <h1 class="font-display text-4xl font-extrabold md:text-5xl" data-reveal data-reveal-delay="100">تور مجازی</h1>
+    <p class="mt-4 max-w-xl text-sm leading-8 text-muted" data-reveal data-reveal-delay="200">
+      برای املاک منتخب، تور ۳۶۰ درجه با جابه‌جایی روان بین فضاها آماده کرده‌ایم — بچرخید، نگاه کنید و از فضایی به فضای دیگر بروید.
+    </p>
+
+    <div class="mt-12 grid gap-8 md:grid-cols-2">
+      {
+        TOURS.map((t, i) => {
+          const p = bySlug(t.propSlug)!;
+          return (
+            <a href={url(`/tour/${t.slug}`)} class="card-zoom group relative block" data-reveal data-reveal-delay={String(i * 120)}>
+              <img
+                src={url(`/img/props/${t.propSlug}/cover.jpg`)}
+                alt={t.title}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                class="aspect-[16/10] w-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/20 to-transparent" />
+              <div class="absolute inset-x-0 bottom-0 flex items-end justify-between p-6">
+                <div>
+                  <h2 class="font-display text-xl font-bold md:text-2xl">{t.title}</h2>
+                  <p class="mt-1 text-sm text-ivory/70">
+                    {faNum(t.nodes.length)} فضا · {p.location}
+                  </p>
+                </div>
+                <span class="flex h-14 w-14 items-center justify-center rounded-full border border-gold/60 bg-night/60 text-gold-bright backdrop-blur transition-transform duration-300 group-hover:scale-110">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="9" />
+                    <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+                  </svg>
+                </span>
+              </div>
+            </a>
+          );
+        })
+      }
+    </div>
+
+    <div class="mt-12 overflow-hidden rounded-3xl border border-dashed border-gold/40 bg-surface/60" data-reveal>
+      <div class="flex flex-wrap items-center justify-between gap-6 p-8">
+        <div class="max-w-lg">
+          <div class="flex items-center gap-3">
+            <h2 class="font-display text-xl font-bold text-gold-bright">دموی سه‌بعدی — قدم بزنید!</h2>
+            <span class="rounded-full bg-gold/15 px-3 py-1 text-xs text-gold">آزمایشی 🧪</span>
+          </div>
+          <p class="mt-3 text-sm leading-7 text-muted">
+            یک آپارتمان سه‌بعدی که واقعاً می‌توانید در آن راه بروید — با کلیدهای WASD یا لمس. این قابلیت در حال توسعه است.
+          </p>
+        </div>
+        <a href={url('/demo-3d')} class="btn-gold shrink-0">ورود به دمو</a>
+      </div>
+    </div>
+  </section>
+</Base>

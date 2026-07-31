@@ -1,0 +1,398 @@
+---
+import Base from '../layouts/Base.astro';
+import PropertyCard from '../components/PropertyCard.astro';
+import { featured, bySlug } from '../data/properties';
+import { SITE, url, faNum } from '../lib/site';
+
+const fogProp = bySlug('lavasan-villa')!;
+
+const FEED = [
+  { src: '/img/props/lavasan-villa/1.jpg', title: 'ویلا دوبلکس لواسان', sub: 'نمای شیشه‌ای رو به کوهستان' },
+  { src: '/img/props/zafaraniyeh-penthouse/1.jpg', title: 'پنت‌هاوس زعفرانیه', sub: 'یک طبقه کامل در بام تهران' },
+  { src: '/img/props/namakabrud-villa/cover.jpg', title: 'ویلا ساحلی نمک‌آبرود', sub: 'خط یک ساحل، باغ مرکبات' },
+  { src: '/img/props/kordan-garden-villa/cover.jpg', title: 'باغ‌ویلا کردان', sub: 'زیر سایه گردوهای کهنسال' },
+] as const;
+---
+
+<Base intro>
+  <!-- ═══ Cinematic intro — «افق» (plays once per session) ═══ -->
+  <div
+    slot="intro"
+    id="intro"
+    class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-night"
+    aria-hidden="true"
+  >
+    <div class="relative flex flex-col items-center">
+      <div id="intro-orb" class="mb-6 h-3 w-3 rounded-full bg-gold opacity-0 shadow-[0_0_40px_10px_rgba(201,164,106,0.45)]"></div>
+      <h1 id="intro-word" class="font-display text-5xl font-extrabold tracking-tight text-ivory md:text-7xl">
+        {['و', 'ی', 'س', 'ت', 'ا'].map((ch) => <span class="intro-ch inline-block opacity-0">{ch}</span>)}
+      </h1>
+      <div id="intro-line" class="mt-6 h-px w-0 bg-gradient-to-l from-transparent via-gold to-transparent"></div>
+      <p id="intro-sub" class="mt-5 text-xs tracking-[0.5em] text-gold opacity-0">V I S T A</p>
+    </div>
+    <button id="intro-skip" class="absolute bottom-8 text-xs text-muted transition-colors hover:text-gold">
+      رد شدن
+    </button>
+  </div>
+
+  <!-- ═══ Hero ═══ -->
+  <section class="relative flex min-h-svh items-end overflow-hidden">
+    <div class="absolute inset-0">
+      <img
+        id="hero-img"
+        src={url('/img/hero.jpg')}
+        alt="عمارتی لوکس در گرگ‌ومیش"
+        class="h-full w-full scale-105 object-cover"
+        fetchpriority="high"
+        decoding="async"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-night via-night/35 to-night/60"></div>
+      <div class="absolute inset-0 bg-gradient-to-l from-night/55 via-transparent to-transparent"></div>
+    </div>
+
+    <div class="container-v relative z-10 pb-24 pt-40 md:pb-32">
+      <p class="eyebrow mb-5" data-reveal>املاک لوکس ویستا</p>
+      <h1 class="font-display max-w-3xl text-4xl font-extrabold leading-[1.25] md:text-6xl md:leading-[1.2]" data-reveal data-reveal-delay="120">
+        چشم‌اندازی نو به <span class="text-gold-bright">زندگیِ لوکس</span>
+      </h1>
+      <p class="mt-6 max-w-xl text-base leading-8 text-ivory/80 md:text-lg" data-reveal data-reveal-delay="240">
+        مجموعه‌ای گزیده از ویلاها، پنت‌هاوس‌ها و آپارتمان‌های خاص — با تور مجازی ۳۶۰ درجه، پیش از بازدید، آنجا قدم بزنید.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-4" data-reveal data-reveal-delay="360">
+        <a href={url('/properties')} class="btn-gold">مشاهده املاک</a>
+        <a href={url('/tours')} class="btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"></circle>
+            <ellipse cx="12" cy="12" rx="9" ry="3.5"></ellipse>
+          </svg>
+          تور مجازی ۳۶۰°
+        </a>
+      </div>
+    </div>
+
+    <div class="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 animate-bounce text-gold/70" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M12 5v14m0 0l-6-6m6 6l6-6"></path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══ Featured properties ═══ -->
+  <section class="container-v pt-24 md:pt-32">
+    <div class="mb-12 flex items-end justify-between gap-6">
+      <div>
+        <p class="eyebrow mb-3" data-reveal>گزیده ویستا</p>
+        <h2 class="font-display text-3xl font-bold md:text-4xl" data-reveal data-reveal-delay="100">املاک شاخص</h2>
+      </div>
+      <a href={url('/properties')} class="hidden shrink-0 text-sm text-gold transition-colors hover:text-gold-bright md:block" data-reveal>
+        مشاهده همه ←
+      </a>
+    </div>
+    <div class="grid gap-6 md:grid-cols-3">
+      {featured.map((p, i) => <div data-reveal data-reveal-delay={String(i * 120)}><PropertyCard property={p} loading="lazy" /></div>)}
+    </div>
+  </section>
+
+  <!-- ═══ Center-expand scroll feed (11tanjung-inspired) ═══ -->
+  <section id="feed" class="mt-28 md:mt-40">
+    <div class="container-v mb-14 text-center">
+      <p class="eyebrow mb-3" data-reveal>گالری ویستا</p>
+      <h2 class="font-display text-3xl font-bold md:text-4xl" data-reveal data-reveal-delay="100">
+        قاب‌هایی که از وسط باز می‌شوند
+      </h2>
+      <p class="mt-4 text-sm text-muted" data-reveal data-reveal-delay="200">اسکرول کنید…</p>
+    </div>
+
+    <div class="space-y-10 md:space-y-16">
+      {
+        FEED.map((f) => (
+          <figure class="feed-item relative mx-auto w-full max-w-5xl px-4">
+            <div class="feed-frame relative overflow-hidden rounded-3xl">
+              <img src={url(f.src)} alt={f.title} loading="lazy" decoding="async" class="aspect-[16/9] w-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-night/75 via-transparent to-transparent" />
+              <figcaption class="feed-cap absolute inset-x-0 bottom-0 flex items-end justify-between p-6 opacity-0 md:p-8">
+                <div>
+                  <h3 class="font-display text-xl font-bold text-ivory md:text-2xl">{f.title}</h3>
+                  <p class="mt-1 text-sm text-ivory/70">{f.sub}</p>
+                </div>
+              </figcaption>
+            </div>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ═══ Fog / night-reveal (Navana-inspired, our own take) ═══ -->
+  <section class="container-v mt-28 md:mt-40">
+    <div class="mb-10 max-w-xl">
+      <p class="eyebrow mb-3" data-reveal>تجربه ویستا</p>
+      <h2 class="font-display text-3xl font-bold md:text-4xl" data-reveal data-reveal-delay="100">
+        مه را کنار بزنید، <span class="text-gold-bright">شب را ببینید</span>
+      </h2>
+      <p class="mt-4 text-sm leading-7 text-muted" data-reveal data-reveal-delay="200">
+        نشان‌گر را روی تصویر حرکت دهید — چراغ‌های ویلا روشن می‌شوند و نمای شب از پس مه پیدا می‌شود.
+      </p>
+    </div>
+
+    <div
+      id="fog-stage"
+      class="group relative aspect-[16/9] cursor-crosshair overflow-hidden rounded-3xl md:aspect-[21/9]"
+      data-reveal
+    >
+      <img src={url(`/img/props/${fogProp.slug}/cover.jpg`)} alt={fogProp.title} loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" />
+      <img
+        id="fog-night"
+        src={url(`/img/props/${fogProp.slug}/night.jpg`)}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+      <div class="fog-layer fog-a" aria-hidden="true"></div>
+      <div class="fog-layer fog-b" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-night/80 to-transparent p-6 md:p-8">
+        <div>
+          <h3 class="font-display text-xl font-bold">{fogProp.title}</h3>
+          <p class="mt-1 text-sm text-ivory/70">{fogProp.location}</p>
+        </div>
+        <a href={url(`/properties/${fogProp.slug}`)} class="btn-gold pointer-events-auto !px-5 !py-2 text-sm">جزئیات ملک</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Stats ═══ -->
+  <section class="container-v mt-28">
+    <div class="grid grid-cols-3 gap-6 rounded-3xl border border-line bg-surface/60 px-6 py-10 text-center md:py-12" data-reveal>
+      {
+        [
+          { n: faNum(120) + '+', l: 'ملک تحویل‌شده' },
+          { n: faNum(14), l: 'سال تجربه' },
+          { n: faNum(6), l: 'شهر فعال' },
+        ].map((s) => (
+          <div>
+            <div class="font-display text-3xl font-extrabold text-gold-bright md:text-4xl">{s.n}</div>
+            <div class="mt-2 text-xs text-muted md:text-sm">{s.l}</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ═══ Virtual tour teaser ═══ -->
+  <section class="container-v mt-28 md:mt-36">
+    <div class="grid items-center gap-10 md:grid-cols-2">
+      <div>
+        <p class="eyebrow mb-3" data-reveal>تور مجازی</p>
+        <h2 class="font-display text-3xl font-bold leading-snug md:text-4xl" data-reveal data-reveal-delay="100">
+          قدم بزنید،<br />بی‌آنکه آنجا باشید
+        </h2>
+        <p class="mt-5 max-w-md text-sm leading-8 text-muted" data-reveal data-reveal-delay="200">
+          برای دو ملک منتخب، تور ۳۶۰ درجه با جابه‌جایی نرم بین فضاها آماده کرده‌ایم — و یک دموی سه‌بعدیِ آزمایشی که در آن واقعاً راه می‌روید.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4" data-reveal data-reveal-delay="300">
+          <a href={url('/tours')} class="btn-gold">ورود به تورها</a>
+          <a href={url('/demo-3d')} class="btn-ghost">دموی سه‌بعدی 🧪</a>
+        </div>
+      </div>
+      <div class="grid gap-5" data-reveal data-reveal-delay="150">
+        {
+          ['lavasan-villa', 'zafaraniyeh-penthouse'].map((slug) => {
+            const p = bySlug(slug)!;
+            return (
+              <a href={url(`/tour/${slug}`)} class="card-zoom group relative block">
+                <img src={url(`/img/props/${slug}/cover.jpg`)} alt={p.title} loading="lazy" decoding="async" class="aspect-[16/7] w-full object-cover" />
+                <div class="absolute inset-0 flex items-center justify-center bg-night/45 transition-colors duration-300 group-hover:bg-night/25">
+                  <span class="flex items-center gap-2 rounded-full border border-gold/60 bg-night/60 px-5 py-2.5 text-sm text-gold-bright backdrop-blur">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="9" />
+                      <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+                    </svg>
+                    تور ۳۶۰° — {p.title}
+                  </span>
+                </div>
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="container-v mt-28 md:mt-36">
+    <div class="relative overflow-hidden rounded-3xl border border-line bg-surface px-8 py-14 text-center md:py-20" data-reveal>
+      <div class="pointer-events-none absolute -top-24 left-1/2 h-48 w-[36rem] -translate-x-1/2 rounded-full bg-gold/10 blur-3xl"></div>
+      <h2 class="font-display text-2xl font-bold md:text-4xl">خانه بعدی‌تان را با ویستا پیدا کنید</h2>
+      <p class="mx-auto mt-4 max-w-md text-sm leading-7 text-muted">
+        مشاوران ما همین امروز پاسخ‌گوی شما هستند — از انتخاب تا انتقال سند.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-4">
+        <a href={SITE.whatsapp} target="_blank" rel="noopener" class="btn-gold">گفتگو در واتساپ</a>
+        <a href={url('/contact')} class="btn-ghost">فرم تماس</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* feed frames start "closed from the center" — GSAP scrubs them open */
+  @media (prefers-reduced-motion: no-preference) {
+    .feed-frame {
+      clip-path: inset(14% 30% 14% 30% round 24px);
+    }
+  }
+
+  /* drifting fog layers over the night image */
+  .fog-layer {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    opacity: 0.5;
+    filter: blur(2px);
+  }
+  .fog-a {
+    background:
+      radial-gradient(38% 30% at 25% 35%, rgba(228, 230, 240, 0.5), transparent 70%),
+      radial-gradient(30% 24% at 70% 55%, rgba(210, 215, 230, 0.42), transparent 70%),
+      radial-gradient(45% 34% at 45% 80%, rgba(228, 230, 240, 0.36), transparent 72%);
+    animation: fog-drift-a 26s linear infinite alternate;
+  }
+  .fog-b {
+    background:
+      radial-gradient(32% 26% at 80% 30%, rgba(222, 226, 238, 0.44), transparent 70%),
+      radial-gradient(40% 30% at 30% 65%, rgba(206, 212, 228, 0.38), transparent 72%),
+      radial-gradient(26% 22% at 60% 20%, rgba(228, 230, 240, 0.32), transparent 70%);
+    animation: fog-drift-b 34s linear infinite alternate;
+  }
+  @keyframes fog-drift-a {
+    from { transform: translate3d(-6%, -2%, 0) scale(1); }
+    to { transform: translate3d(7%, 3%, 0) scale(1.12); }
+  }
+  @keyframes fog-drift-b {
+    from { transform: translate3d(5%, 2%, 0) scale(1.08); }
+    to { transform: translate3d(-7%, -3%, 0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fog-a, .fog-b { animation: none; }
+  }
+
+  /* night image revealed through a cursor-following circular mask */
+  #fog-night {
+    --mx: 50%;
+    --my: 45%;
+    --mr: 0px;
+    -webkit-mask-image: radial-gradient(circle var(--mr) at var(--mx) var(--my), #000 62%, transparent 100%);
+    mask-image: radial-gradient(circle var(--mr) at var(--mx) var(--my), #000 62%, transparent 100%);
+    transition: none;
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── intro (once per session) ── */
+  const intro = document.getElementById('intro');
+  if (intro) {
+    const seen = sessionStorage.getItem('vista-intro');
+    const finish = () => {
+      intro.remove();
+      document.documentElement.style.overflow = '';
+      sessionStorage.setItem('vista-intro', '1');
+    };
+    if (seen || reduced) {
+      finish();
+    } else {
+      document.documentElement.style.overflow = 'hidden';
+      // تا وقتی تب دیده نشده، اینترو شروع نشود (rAF در تب مخفی ترول می‌شود)
+      const tl = gsap.timeline({ paused: true, onComplete: () => gsap.delayedCall(0.2, close) });
+      tl.to('#intro-line', { width: Math.min(420, innerWidth * 0.7), duration: 0.9, ease: 'power3.inOut' })
+        .to('#intro-orb', { opacity: 1, y: -8, duration: 0.55, ease: 'power2.out' }, '-=0.35')
+        .to('.intro-ch', { opacity: 1, y: 0, stagger: 0.07, duration: 0.5, ease: 'power2.out', startAt: { y: 18 } }, '-=0.3')
+        .to('#intro-sub', { opacity: 1, duration: 0.45 }, '-=0.15');
+      function close() {
+        gsap.to(intro, { yPercent: -100, duration: 0.85, ease: 'power4.inOut', onComplete: finish });
+      }
+      if (document.hidden) {
+        const onVisible = () => {
+          if (!document.hidden) {
+            document.removeEventListener('visibilitychange', onVisible);
+            tl.play();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      } else {
+        tl.play();
+      }
+      document.getElementById('intro-skip')?.addEventListener('click', () => {
+        tl.kill();
+        close();
+      });
+      // فال‌بک: هر اتفاقی افتاد، حداکثر ۶ ثانیه بعد از شروع، اینترو کنار می‌رود
+      setTimeout(() => {
+        if (document.getElementById('intro')) {
+          tl.kill();
+          close();
+        }
+      }, 6500);
+    }
+  }
+
+  /* ── hero slow zoom ── */
+  if (!reduced) {
+    gsap.to('#hero-img', { scale: 1, duration: 2.4, ease: 'power2.out' });
+  }
+
+  /* ── center-expand feed ── */
+  if (!reduced) {
+    document.querySelectorAll<HTMLElement>('.feed-item').forEach((item) => {
+      const frame = item.querySelector('.feed-frame');
+      const cap = item.querySelector('.feed-cap');
+      gsap
+        .timeline({
+          scrollTrigger: { trigger: item, start: 'top 82%', end: 'top 28%', scrub: 0.6 },
+        })
+        .to(frame, { clipPath: 'inset(0% 0% 0% 0% round 24px)', ease: 'none' })
+        .to(cap, { opacity: 1, duration: 0.25 }, '>-0.25');
+    });
+  } else {
+    document.querySelectorAll<HTMLElement>('.feed-cap').forEach((c) => (c.style.opacity = '1'));
+  }
+
+  /* ── fog / night reveal ── */
+  const stage = document.getElementById('fog-stage');
+  const night = document.getElementById('fog-night');
+  if (stage && night) {
+    const setX = gsap.quickTo(night, '--mx', { duration: 0.35, ease: 'power2.out', unit: '%' });
+    const setY = gsap.quickTo(night, '--my', { duration: 0.35, ease: 'power2.out', unit: '%' });
+    const setR = gsap.quickTo(night, '--mr', { duration: 0.5, ease: 'power2.out', unit: 'px' });
+
+    const radius = () => Math.max(stage.clientWidth, stage.clientHeight) * 0.28;
+
+    stage.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      setX(((e.clientX - r.left) / r.width) * 100);
+      setY(((e.clientY - r.top) / r.height) * 100);
+      setR(radius());
+    });
+    stage.addEventListener('pointerleave', () => setR(0));
+
+    // بدون موس (تاچ): جاروی خودکارِ آرام
+    if (matchMedia('(hover: none)').matches && !reduced) {
+      night.style.setProperty('--mr', `${radius()}px`);
+      gsap.to(night, {
+        '--mx': '80%',
+        duration: 5,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
+        startAt: { '--mx': '20%' },
+      });
+    }
+  }
+</script>

@@ -1,0 +1,315 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+---
+
+<Base title="دموی سه‌بعدی" description="دموی آزمایشی قدم زدن در یک آپارتمان سه‌بعدی — با کلیدهای WASD یا لمس.">
+  <section class="relative h-svh w-full">
+    <canvas id="walk-canvas" class="absolute inset-0 h-full w-full"></canvas>
+
+    <!-- top overlay -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-night/80 to-transparent pb-16 pt-24">
+      <div class="container-v flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-3">
+            <h1 class="font-display text-xl font-bold md:text-2xl">آپارتمان سه‌بعدی</h1>
+            <span class="rounded-full bg-gold/15 px-3 py-1 text-xs text-gold">آزمایشی 🧪</span>
+          </div>
+          <p id="walk-hint" class="mt-1 text-xs text-ivory/60">
+            برای شروع کلیک کنید — حرکت: WASD / جهت‌ها · نگاه: موس · خروج: Esc
+          </p>
+        </div>
+        <a href={url('/tours')} class="btn-ghost pointer-events-auto !px-4 !py-2 text-xs">تورهای ۳۶۰° ←</a>
+      </div>
+    </div>
+
+    <!-- mobile controls -->
+    <div id="walk-mobile" class="absolute bottom-20 right-6 z-20 hidden select-none flex-col items-center gap-2">
+      <button data-move="1" class="h-16 w-16 rounded-full border border-gold/50 bg-night/60 text-2xl text-gold backdrop-blur active:bg-gold active:text-night">▲</button>
+      <button data-move="-1" class="h-12 w-12 rounded-full border border-line bg-night/60 text-lg text-ivory/70 backdrop-blur active:bg-gold active:text-night">▼</button>
+    </div>
+
+    <div id="walk-loading" class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-night">
+      <div class="h-px w-40 overflow-hidden bg-surface-2">
+        <div class="h-full w-1/3 animate-[loadbar3d_1.2s_ease-in-out_infinite] bg-gold"></div>
+      </div>
+      <p class="text-xs text-muted">در حال ساخت فضا…</p>
+    </div>
+  </section>
+
+  <script type="application/json" id="walk-env" set:html={JSON.stringify({ env: url('/img/pano/lavasan-villa/living.jpg'), art: [url('/img/props/lavasan-villa/1.jpg'), url('/img/props/zafaraniyeh-penthouse/1.jpg')] })} />
+</Base>
+
+<style>
+  @keyframes loadbar3d {
+    0% { transform: translateX(120%); }
+    100% { transform: translateX(-320%); }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+
+  const cfg = JSON.parse(document.getElementById('walk-env')!.textContent!);
+  const canvas = document.getElementById('walk-canvas') as HTMLCanvasElement;
+  const hint = document.getElementById('walk-hint')!;
+  const mobileUI = document.getElementById('walk-mobile')!;
+  const isTouch = matchMedia('(hover: none)').matches;
+
+  /* ── renderer / scene ── */
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b0a08);
+
+  const camera = new THREE.PerspectiveCamera(70, 1, 0.05, 100);
+  camera.position.set(0, 1.6, 3.5);
+
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  addEventListener('resize', resize);
+
+  /* ── environment (reuses a tour panorama) ── */
+  new THREE.TextureLoader().load(cfg.env, (tex) => {
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    scene.environment = tex;
+    scene.background = tex;
+    scene.backgroundBlurriness = 0.35;
+    scene.backgroundIntensity = 0.25;
+  });
+
+  /* ── materials ── */
+  const matWall = new THREE.MeshStandardMaterial({ color: 0x2a251c, roughness: 0.92 });
+  const matFloor = new THREE.MeshStandardMaterial({ color: 0x4a3a28, roughness: 0.55, metalness: 0.05 });
+  const matCeil = new THREE.MeshStandardMaterial({ color: 0x1b1811, roughness: 1 });
+  const matWood = new THREE.MeshStandardMaterial({ color: 0x5a4630, roughness: 0.6 });
+  const matSofa = new THREE.MeshStandardMaterial({ color: 0x37404a, roughness: 0.85 });
+  const matGold = new THREE.MeshStandardMaterial({ color: 0xc9a46a, roughness: 0.28, metalness: 0.85 });
+  const matDark = new THREE.MeshStandardMaterial({ color: 0x14120e, roughness: 0.7 });
+
+  /* ── room shell: 12 × 3 × 8 ── */
+  const W = 12, H = 3, D = 8;
+  const room = new THREE.Group();
+  scene.add(room);
+
+  function box(w: number, h: number, d: number, mat: THREE.Material, x: number, y: number, z: number, castShadow = true) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z);
+    m.castShadow = castShadow;
+    m.receiveShadow = true;
+    room.add(m);
+    return m;
+  }
+
+  // floor / ceiling
+  box(W, 0.1, D, matFloor, 0, -0.05, 0, false);
+  box(W, 0.1, D, matCeil, 0, H + 0.05, 0, false);
+  // walls — the "window wall" (z = -D/2) is split so the pano shows through glass
+  box(W, H, 0.15, matWall, 0, H / 2, D / 2); // back
+  box(0.15, H, D, matWall, -W / 2, H / 2, 0); // right
+  box(0.15, H, D, matWall, W / 2, H / 2, 0); // left
+  // window wall: only slim columns + header/footer
+  box(W, 0.4, 0.15, matWall, 0, 0.2, -D / 2);
+  box(W, 0.4, 0.15, matWall, 0, H - 0.2, -D / 2);
+  box(0.25, H, 0.15, matWall, -W / 2 + 0.15, H / 2, -D / 2);
+  box(0.25, H, 0.15, matWall, W / 2 - 0.15, H / 2, -D / 2);
+  box(0.18, H - 0.8, 0.12, matGold, -W / 6, H / 2, -D / 2);
+  box(0.18, H - 0.8, 0.12, matGold, W / 6, H / 2, -D / 2);
+  // glass
+  const glass = new THREE.Mesh(
+    new THREE.PlaneGeometry(W - 0.6, H - 0.8),
+    new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, roughness: 0.05, metalness: 0 })
+  );
+  glass.position.set(0, H / 2, -D / 2 + 0.02);
+  room.add(glass);
+
+  /* ── furniture ── */
+  // sofa
+  box(3.2, 0.45, 1.1, matSofa, -2.2, 0.225, 0.6);
+  box(3.2, 0.5, 0.3, matSofa, -2.2, 0.7, 1.05);
+  box(0.3, 0.55, 1.1, matSofa, -3.65, 0.5, 0.6);
+  box(0.3, 0.55, 1.1, matSofa, -0.75, 0.5, 0.6);
+  // coffee table
+  const table = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.06, 40), matWood);
+  table.position.set(-2.2, 0.42, -0.7);
+  table.castShadow = true;
+  room.add(table);
+  const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.4, 20), matGold);
+  tableLeg.position.set(-2.2, 0.2, -0.7);
+  room.add(tableLeg);
+  // rug
+  const rug = new THREE.Mesh(new THREE.CircleGeometry(1.8, 48), new THREE.MeshStandardMaterial({ color: 0x241f15, roughness: 1 }));
+  rug.rotation.x = -Math.PI / 2;
+  rug.position.set(-2.2, 0.011, 0);
+  rug.receiveShadow = true;
+  room.add(rug);
+  // kitchen island + counter
+  box(2.6, 0.95, 0.9, matDark, 3.4, 0.475, 1.6);
+  box(2.7, 0.06, 1.0, matGold, 3.4, 0.98, 1.6);
+  box(3.4, 1.0, 0.55, matDark, 3.9, 0.5, 3.4);
+  box(3.4, 0.05, 0.6, matWood, 3.9, 1.03, 3.4);
+  // dining table + chairs
+  box(1.8, 0.07, 0.95, matWood, 1.2, 0.75, -2.2);
+  box(0.08, 0.75, 0.08, matDark, 0.5, 0.375, -2.0);
+  box(0.08, 0.75, 0.08, matDark, 1.9, 0.375, -2.0);
+  box(0.08, 0.75, 0.08, matDark, 0.5, 0.375, -2.4);
+  box(0.08, 0.75, 0.08, matDark, 1.9, 0.375, -2.4);
+  for (const dz of [-1.55, -2.85]) {
+    box(0.45, 0.5, 0.45, matSofa, 1.2, 0.25, dz);
+  }
+
+  /* ── wall art (property photos in gold frames) ── */
+  const texLoader = new THREE.TextureLoader();
+  cfg.art.forEach((src: string, i: number) => {
+    texLoader.load(src, (t) => {
+      t.colorSpace = THREE.SRGBColorSpace;
+      const fw = 1.9, fh = 1.25;
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(fw + 0.1, fh + 0.1, 0.05), matGold);
+      const art = new THREE.Mesh(new THREE.PlaneGeometry(fw, fh), new THREE.MeshBasicMaterial({ map: t }));
+      const x = i === 0 ? -2.6 : 2.6;
+      frame.position.set(x, 1.65, D / 2 - 0.11);
+      art.position.set(x, 1.65, D / 2 - 0.13);
+      art.rotation.y = Math.PI;
+      room.add(frame, art);
+    });
+  });
+
+  /* ── lights ── */
+  scene.add(new THREE.AmbientLight(0x8a7a5f, 0.6));
+  scene.add(new THREE.HemisphereLight(0xfff2dd, 0x1a150e, 0.55));
+  const sun = new THREE.DirectionalLight(0xf2e2c4, 1.4);
+  sun.position.set(-3, 4.5, -6);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  scene.add(sun);
+
+  function lamp(x: number, z: number) {
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.7, 12), matGold);
+    pole.position.set(x, 0.85, z);
+    const bulb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16, 24, 24),
+      new THREE.MeshStandardMaterial({ color: 0xffe6b0, emissive: 0xffd68a, emissiveIntensity: 2.2 })
+    );
+    bulb.position.set(x, 1.78, z);
+    const light = new THREE.PointLight(0xffd9a0, 14, 9, 2);
+    light.position.set(x, 1.8, z);
+    room.add(pole, bulb, light);
+  }
+  lamp(-3.9, -1.6);
+  lamp(4.6, -0.8);
+
+  /* ── first-person controls ── */
+  let yaw = Math.PI, pitch = 0;
+  const keys = new Set<string>();
+  let touchMove = 0;
+
+  const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+  function applyLook() {
+    euler.set(pitch, yaw, 0);
+    camera.quaternion.setFromEuler(euler);
+  }
+  applyLook();
+
+  if (!isTouch) {
+    canvas.addEventListener('click', () => canvas.requestPointerLock());
+    document.addEventListener('pointerlockchange', () => {
+      hint.textContent = document.pointerLockElement
+        ? 'حرکت: WASD / جهت‌ها · خروج: Esc'
+        : 'برای شروع کلیک کنید — حرکت: WASD / جهت‌ها · نگاه: موس';
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!document.pointerLockElement) return;
+      yaw -= e.movementX * 0.0022;
+      pitch = Math.max(-1.35, Math.min(1.35, pitch - e.movementY * 0.0022));
+      applyLook();
+    });
+    addEventListener('keydown', (e) => keys.add(e.code));
+    addEventListener('keyup', (e) => keys.delete(e.code));
+  } else {
+    mobileUI.classList.remove('hidden');
+    mobileUI.classList.add('flex');
+    hint.textContent = 'با انگشت بچرخید؛ با دکمه‌ها حرکت کنید';
+    let px = 0, py = 0, dragging = false;
+    canvas.addEventListener('touchstart', (e) => {
+      dragging = true;
+      px = e.touches[0].clientX;
+      py = e.touches[0].clientY;
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      const t = e.touches[0];
+      yaw -= (t.clientX - px) * 0.005;
+      pitch = Math.max(-1.35, Math.min(1.35, pitch - (t.clientY - py) * 0.005));
+      px = t.clientX;
+      py = t.clientY;
+      applyLook();
+    }, { passive: true });
+    canvas.addEventListener('touchend', () => (dragging = false));
+    for (const b of mobileUI.querySelectorAll<HTMLButtonElement>('button')) {
+      const dir = Number(b.dataset.move);
+      b.addEventListener('touchstart', (e) => { e.preventDefault(); touchMove = dir; });
+      b.addEventListener('touchend', () => (touchMove = 0));
+    }
+  }
+
+  /* ── movement + soft collision (room bounds + furniture AABBs) ── */
+  const blockers = [
+    { x1: -3.9, x2: -0.5, z1: 0.0, z2: 1.3 }, // sofa
+    { x1: -2.9, x2: -1.5, z1: -1.4, z2: 0.0 }, // coffee table
+    { x1: 2.0, x2: 4.8, z1: 1.1, z2: 2.1 }, // island
+    { x1: 2.1, x2: 5.7, z1: 3.0, z2: 3.9 }, // counter
+    { x1: 0.2, x2: 2.2, z1: -3.1, z2: -1.3 }, // dining
+  ];
+  const PAD = 0.45;
+
+  function tryMove(nx: number, nz: number) {
+    nx = Math.max(-W / 2 + PAD, Math.min(W / 2 - PAD, nx));
+    nz = Math.max(-D / 2 + PAD, Math.min(D / 2 - PAD, nz));
+    for (const b of blockers) {
+      if (nx > b.x1 - PAD && nx < b.x2 + PAD && nz > b.z1 - PAD && nz < b.z2 + PAD) {
+        // اجازه سر خوردن در محور آزاد
+        if (camera.position.x > b.x1 - PAD && camera.position.x < b.x2 + PAD) nz = camera.position.z;
+        else nx = camera.position.x;
+      }
+    }
+    camera.position.x = nx;
+    camera.position.z = nz;
+  }
+
+  /* ── loop ── */
+  const clock = new THREE.Clock();
+  let headT = 0;
+  function frame() {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    const fwd = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) + touchMove;
+    const strafe = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0);
+    const speed = 2.6;
+    if (fwd || strafe) {
+      const sin = Math.sin(yaw), cos = Math.cos(yaw);
+      const dx = (-sin * fwd + cos * strafe) * speed * dt;
+      const dz = (-cos * fwd - sin * strafe) * speed * dt;
+      tryMove(camera.position.x + dx, camera.position.z + dz);
+      headT += dt * 9;
+      camera.position.y = 1.6 + Math.sin(headT) * 0.02;
+    }
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  frame();
+  const loadingEl = document.getElementById('walk-loading')!;
+  loadingEl.style.transition = 'opacity .6s ease';
+  loadingEl.style.opacity = '0';
+  setTimeout(() => loadingEl.remove(), 650);
+</script>

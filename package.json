@@ -1,0 +1,27 @@
+{
+  "name": "vista-estate",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "assets": "node scripts/fetch-assets.mjs && node scripts/process-night.mjs"
+  },
+  "dependencies": {
+    "@photo-sphere-viewer/core": "^5.15.0",
+    "@photo-sphere-viewer/markers-plugin": "^5.15.0",
+    "@photo-sphere-viewer/virtual-tour-plugin": "^5.15.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.1.6",
+    "gsap": "^3.15.0",
+    "tailwindcss": "^4.3.3",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.185.1",
+    "sharp": "^0.35.3",
+    "undici": "^7.29.0"
+  }
+}

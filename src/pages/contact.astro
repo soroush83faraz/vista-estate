@@ -1,0 +1,117 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+---
+
+<Base title="تماس" description="با ویستا در تماس باشید — تلفن، واتساپ یا فرم تماس.">
+  <section class="container-v pt-32 md:pt-40">
+    <p class="eyebrow mb-3" data-reveal>در خدمتیم</p>
+    <h1 class="font-display text-4xl font-extrabold md:text-5xl" data-reveal data-reveal-delay="100">تماس با ویستا</h1>
+    <p class="mt-4 max-w-xl text-sm leading-8 text-muted" data-reveal data-reveal-delay="200">
+      از مشاوره خرید تا هماهنگی بازدید — هر روز هفته، ۹ صبح تا ۹ شب پاسخ‌گو هستیم.
+    </p>
+
+    <div class="mt-12 grid gap-10 md:grid-cols-[1fr_1.2fr]">
+      <!-- direct channels -->
+      <div class="space-y-4" data-reveal data-reveal-delay="150">
+        <a href={SITE.phoneHref} class="flex items-center justify-between rounded-2xl border border-line bg-surface/60 p-6 transition-colors hover:border-gold/50">
+          <div>
+            <div class="text-xs text-muted">تماس مستقیم</div>
+            <div class="font-display mt-1 text-lg font-bold" dir="ltr">{SITE.phone}</div>
+          </div>
+          <span class="text-2xl">📞</span>
+        </a>
+        <a href={SITE.whatsapp} target="_blank" rel="noopener" class="flex items-center justify-between rounded-2xl border border-line bg-surface/60 p-6 transition-colors hover:border-gold/50">
+          <div>
+            <div class="text-xs text-muted">سریع‌ترین راه</div>
+            <div class="font-display mt-1 text-lg font-bold">گفتگو در واتساپ</div>
+          </div>
+          <span class="text-2xl">💬</span>
+        </a>
+        <a href={`mailto:${SITE.email}`} class="flex items-center justify-between rounded-2xl border border-line bg-surface/60 p-6 transition-colors hover:border-gold/50">
+          <div>
+            <div class="text-xs text-muted">ایمیل</div>
+            <div class="font-display mt-1 text-lg font-bold" dir="ltr">{SITE.email}</div>
+          </div>
+          <span class="text-2xl">✉️</span>
+        </a>
+        <div class="rounded-2xl border border-line bg-surface/60 p-6">
+          <div class="text-xs text-muted">دفتر مرکزی</div>
+          <div class="mt-1 text-sm leading-7 text-ivory/85">تهران، زعفرانیه، خیابان مقدس اردبیلی — ساختمان ویستا</div>
+        </div>
+      </div>
+
+      <!-- form → composes a WhatsApp message (no backend needed) -->
+      <form id="contact-form" class="rounded-3xl border border-line bg-surface p-7 md:p-9" data-reveal data-reveal-delay="250">
+        <h2 class="font-display text-xl font-bold">فرم تماس</h2>
+        <p class="mt-2 text-xs leading-6 text-muted">
+          پیام شما مستقیم در واتساپ ما باز می‌شود — بدون ثبت اطلاعات در هیچ سروری.
+        </p>
+
+        <div class="mt-7 grid gap-5">
+          <label class="block">
+            <span class="mb-2 block text-xs text-muted">نام و نام خانوادگی</span>
+            <input
+              name="name"
+              required
+              class="w-full rounded-xl border border-line bg-night px-4 py-3 text-sm text-ivory placeholder:text-muted/60 focus:border-gold focus:outline-none"
+              placeholder="مثلاً سارا محمدی"
+            />
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-xs text-muted">شماره تماس</span>
+            <input
+              name="phone"
+              type="tel"
+              dir="ltr"
+              class="w-full rounded-xl border border-line bg-night px-4 py-3 text-sm text-ivory placeholder:text-muted/60 focus:border-gold focus:outline-none"
+              placeholder="0912…"
+            />
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-xs text-muted">موضوع</span>
+            <select
+              name="topic"
+              class="w-full rounded-xl border border-line bg-night px-4 py-3 text-sm text-ivory focus:border-gold focus:outline-none"
+            >
+              <option>مشاوره خرید</option>
+              <option>درخواست بازدید</option>
+              <option>فروش ملک من</option>
+              <option>سایر</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-xs text-muted">پیام</span>
+            <textarea
+              name="message"
+              rows="4"
+              required
+              class="w-full resize-none rounded-xl border border-line bg-night px-4 py-3 text-sm text-ivory placeholder:text-muted/60 focus:border-gold focus:outline-none"
+              placeholder="سلام، درباره…"></textarea>
+          </label>
+          <button type="submit" class="btn-gold justify-center">ارسال از طریق واتساپ</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const WA = 'https://wa.me/989120000000'; // TODO(owner): شماره واقعی
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = new FormData(form);
+    const msg = [
+      'سلام، از سایت ویستا پیام می‌دهم 🌟',
+      `نام: ${d.get('name')}`,
+      d.get('phone') ? `تماس: ${d.get('phone')}` : '',
+      `موضوع: ${d.get('topic')}`,
+      '',
+      String(d.get('message')),
+    ]
+      .filter(Boolean)
+      .join('\n');
+    open(`${WA}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  });
+</script>

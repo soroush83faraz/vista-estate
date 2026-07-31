@@ -1,0 +1,211 @@
+---
+import '../styles/global.css';
+import { SITE, url } from '../lib/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** true فقط برای صفحه اول — اینتروی سینمایی */
+  intro?: boolean;
+}
+
+const { title, description = SITE.description, intro = false } = Astro.props;
+const pageTitle = title ? `${title} | ${SITE.brand}` : `${SITE.brand} | املاک لوکس`;
+const path = Astro.url.pathname;
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+const isActive = (href: string) =>
+  href === '/' ? path === base + '/' || path === base : path.startsWith(base + href);
+
+const NAV = [
+  { href: '/', label: 'خانه' },
+  { href: '/properties', label: 'املاک' },
+  { href: '/tours', label: 'تور مجازی' },
+  { href: '/about', label: 'درباره ویستا' },
+  { href: '/contact', label: 'تماس' },
+] as const;
+---
+
+<!doctype html>
+<html dir="rtl" lang="fa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0b0a08" />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    {intro && <slot name="intro" />}
+
+    <header
+      id="site-header"
+      class="fixed inset-x-0 top-0 z-40 border-b border-transparent transition-all duration-500"
+    >
+      <div class="container-v flex h-16 items-center justify-between md:h-20">
+        <a href={url('/')} class="group flex items-baseline gap-2" aria-label="ویستا — خانه">
+          <span class="font-display text-2xl font-extrabold tracking-tight text-ivory">ویستا</span>
+          <span class="text-[10px] font-medium tracking-[0.45em] text-gold">VISTA</span>
+        </a>
+
+        <nav class="hidden items-center gap-7 md:flex" aria-label="ناوبری اصلی">
+          {
+            NAV.map((item) => (
+              <a
+                href={url(item.href)}
+                class:list={[
+                  'text-sm transition-colors duration-300 hover:text-gold-bright',
+                  isActive(item.href) ? 'text-gold' : 'text-ivory/80',
+                ]}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+          <a href={SITE.whatsapp} target="_blank" rel="noopener" class="btn-gold !px-5 !py-2 text-sm">
+            مشاوره سریع
+          </a>
+        </nav>
+
+        <button
+          id="menu-btn"
+          class="flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+          aria-label="منو"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <span class="h-px w-6 bg-ivory transition-all duration-300"></span>
+          <span class="h-px w-6 bg-gold transition-all duration-300"></span>
+          <span class="h-px w-6 bg-ivory transition-all duration-300"></span>
+        </button>
+      </div>
+
+      <div
+        id="mobile-menu"
+        class="hidden border-t border-line bg-night/95 backdrop-blur-xl md:hidden"
+      >
+        <nav class="container-v flex flex-col gap-1 py-4" aria-label="ناوبری موبایل">
+          {
+            NAV.map((item) => (
+              <a
+                href={url(item.href)}
+                class:list={[
+                  'rounded-lg px-3 py-3 text-base transition-colors',
+                  isActive(item.href) ? 'bg-surface text-gold' : 'text-ivory/85',
+                ]}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="mt-24 border-t border-line bg-night-2">
+      <div class="container-v grid gap-10 py-14 md:grid-cols-3">
+        <div>
+          <div class="flex items-baseline gap-2">
+            <span class="font-display text-2xl font-extrabold text-ivory">ویستا</span>
+            <span class="text-[10px] tracking-[0.45em] text-gold">VISTA</span>
+          </div>
+          <p class="mt-4 max-w-xs text-sm leading-7 text-muted">{SITE.tagline}؛ {SITE.description}</p>
+        </div>
+        <div>
+          <h3 class="eyebrow mb-5">دسترسی سریع</h3>
+          <ul class="space-y-3 text-sm">
+            {
+              NAV.map((item) => (
+                <li>
+                  <a href={url(item.href)} class="text-ivory/75 transition-colors hover:text-gold-bright">
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div>
+          <h3 class="eyebrow mb-5">ارتباط با ما</h3>
+          <ul class="space-y-3 text-sm text-ivory/75">
+            <li>
+              <a href={SITE.phoneHref} class="transition-colors hover:text-gold-bright" dir="ltr">
+                {SITE.phone}
+              </a>
+            </li>
+            <li>
+              <a href={`mailto:${SITE.email}`} class="transition-colors hover:text-gold-bright">
+                {SITE.email}
+              </a>
+            </li>
+            <li>
+              <a href={SITE.whatsapp} target="_blank" rel="noopener" class="transition-colors hover:text-gold-bright">
+                واتساپ
+              </a>
+            </li>
+            <li>
+              <a href={SITE.instagram} target="_blank" rel="noopener" class="transition-colors hover:text-gold-bright">
+                اینستاگرام
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="gold-rule"></div>
+      <p class="container-v py-6 text-center text-xs text-muted">
+        © ۱۴۰۵ ویستا — همه حقوق محفوظ است.
+      </p>
+    </footer>
+
+    <script>
+      // header background on scroll
+      const header = document.getElementById('site-header')!;
+      const onScroll = () => {
+        const scrolled = window.scrollY > 24;
+        header.classList.toggle('bg-night/85', scrolled);
+        header.classList.toggle('backdrop-blur-xl', scrolled);
+        header.classList.toggle('border-line', scrolled);
+      };
+      onScroll();
+      addEventListener('scroll', onScroll, { passive: true });
+
+      // mobile menu
+      const btn = document.getElementById('menu-btn')!;
+      const menu = document.getElementById('mobile-menu')!;
+      btn.addEventListener('click', () => {
+        const open = menu.classList.toggle('hidden') === false;
+        btn.setAttribute('aria-expanded', String(open));
+      });
+
+      // generic reveal-on-scroll (vanilla — no library cost on normal pages)
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if (reduced) {
+        targets.forEach((el) => el.style.cssText += 'opacity:1;transform:none');
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              const el = e.target as HTMLElement;
+              el.style.transition = 'opacity .9s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1)';
+              el.style.transitionDelay = (el.dataset.revealDelay ?? '0') + 'ms';
+              el.style.opacity = '1';
+              el.style.transform = 'none';
+              io.unobserve(el);
+            }
+          },
+          { threshold: 0.12 }
+        );
+        targets.forEach((el) => io.observe(el));
+      }
+    </script>
+  </body>
+</html>

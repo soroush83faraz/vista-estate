@@ -1,0 +1,123 @@
+@import 'tailwindcss';
+
+/* ─── VISTA design tokens ─── */
+@theme {
+  --color-night: #0b0a08;
+  --color-night-2: #14120e;
+  --color-surface: #1b1811;
+  --color-surface-2: #241f15;
+  --color-gold: #c9a46a;
+  --color-gold-bright: #e6cc96;
+  --color-gold-dim: #8a7148;
+  --color-ivory: #f4eee3;
+  --color-muted: #a79e8d;
+  --color-line: rgba(201, 164, 106, 0.18);
+
+  --font-sans: 'Vazirmatn', system-ui, sans-serif;
+  --font-display: 'Estedad', 'Vazirmatn', system-ui, sans-serif;
+}
+
+/* ─── Fonts (self-hosted, variable) ─── */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../assets/fonts/Vazirmatn-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Estedad';
+  src: url('../assets/fonts/Estedad-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* ─── Base ─── */
+html {
+  scroll-behavior: smooth;
+}
+body {
+  @apply bg-night text-ivory font-sans antialiased;
+  overflow-x: hidden;
+}
+::selection {
+  background: var(--color-gold);
+  color: var(--color-night);
+}
+
+/* thin gold scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-night);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-2);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-dim);
+}
+
+/* ─── Reusable pieces ─── */
+.container-v {
+  @apply mx-auto w-full max-w-6xl px-5 md:px-8;
+}
+
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+}
+
+/* بدون letter-spacing زیاد — اتصال حروف فارسی نباید بشکند */
+.eyebrow {
+  @apply text-gold text-xs font-semibold;
+  letter-spacing: 0.02em;
+  word-spacing: 0.35em;
+}
+
+.btn-gold {
+  @apply inline-flex items-center gap-2 rounded-full bg-gold text-night px-7 py-3 font-semibold transition-all duration-300;
+}
+.btn-gold:hover {
+  @apply bg-gold-bright;
+  box-shadow: 0 6px 30px rgba(201, 164, 106, 0.35);
+  transform: translateY(-2px);
+}
+.btn-ghost {
+  @apply inline-flex items-center gap-2 rounded-full border border-line px-7 py-3 font-medium text-ivory transition-all duration-300;
+}
+.btn-ghost:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold-bright);
+}
+
+/* property card hover-scale (11tanjung-inspired) */
+.card-zoom {
+  @apply overflow-hidden rounded-2xl bg-surface;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s ease;
+}
+.card-zoom img {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-zoom:hover {
+  transform: scale(1.03);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.card-zoom:hover img {
+  transform: scale(1.08);
+}
+
+/* reveal-on-scroll default state (progressively enhanced by GSAP) */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  html.no-js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
