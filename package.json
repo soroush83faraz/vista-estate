@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "assets": "node scripts/fetch-assets.mjs && node scripts/process-night.mjs"
+    "assets": "node scripts/fetch-assets.mjs && node scripts/process-night.mjs && node scripts/make-sketch.mjs"
   },
   "dependencies": {
     "@photo-sphere-viewer/core": "^5.15.0",

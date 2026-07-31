@@ -16,91 +16,80 @@ const FEED = [
 ---
 
 <Base intro>
-  <!-- ═══ Cinematic intro — طرح ویلا خط‌به‌خط «ساخته» می‌شود (plays once per session) ═══ -->
+  <!-- ═══ Cinematic intro — لوگوی مینیمال (plays once per session) ═══ -->
   <div
     slot="intro"
     id="intro"
     class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-night"
     aria-hidden="true"
   >
-    <div class="relative flex w-full max-w-2xl flex-col items-center px-6">
-      <svg id="intro-svg" viewBox="0 0 640 360" fill="none" class="w-full max-w-xl" aria-hidden="true">
-        <!-- خط افق -->
-        <path class="bp" d="M20 300 H620" stroke="#c9a46a" stroke-width="2.5" stroke-linecap="round" />
-        <!-- حجم همکف -->
-        <path class="bp" d="M120 300 V215 H430 V300" stroke="#c9a46a" stroke-width="2" stroke-linecap="round" />
-        <!-- دیوار شیشه‌ای همکف -->
-        <path class="bp" d="M155 215 V300 M195 215 V300 M235 215 V300 M275 215 V300" stroke="#8a7148" stroke-width="1.5" />
-        <!-- در ورودی -->
-        <path class="bp" d="M330 300 V240 H375 V300" stroke="#c9a46a" stroke-width="2" />
-        <!-- حجم طبقه بالا -->
-        <path class="bp" d="M100 215 V140 H360 V215" stroke="#c9a46a" stroke-width="2" />
-        <!-- تیغه سقف -->
-        <path class="bp" d="M80 140 H385" stroke="#c9a46a" stroke-width="3" stroke-linecap="round" />
-        <!-- باکس روف -->
-        <path class="bp" d="M315 140 V118 H348 V140" stroke="#8a7148" stroke-width="1.8" />
-        <!-- پنجره نواری طبقه بالا -->
-        <path class="bp" d="M118 165 H342 M118 193 H342" stroke="#8a7148" stroke-width="1.5" />
-        <path class="bp" d="M172 165 V193 M226 165 V193 M280 165 V193" stroke="#8a7148" stroke-width="1.2" />
-        <!-- استخر -->
-        <path class="bp" d="M448 291 H612 M462 296 H598" stroke="#8a7148" stroke-width="1.6" stroke-linecap="round" />
-        <!-- درخت -->
-        <path class="bp" d="M545 300 V266" stroke="#c9a46a" stroke-width="2" />
-        <path class="bp" d="M545 266 C523 268 514 240 534 231 C538 207 572 207 577 230 C598 238 590 267 566 265 C560 268 551 268 545 266 Z" stroke="#c9a46a" stroke-width="1.8" />
-        <!-- ماه -->
-        <circle class="bp" cx="512" cy="84" r="15" stroke="#e6cc96" stroke-width="1.8" />
-      </svg>
-      <h1 id="intro-word" class="font-display mt-8 text-5xl font-extrabold tracking-tight text-ivory opacity-0 md:text-6xl">
+    <div class="relative flex flex-col items-center">
+      <h1 id="intro-word" class="font-display text-5xl font-extrabold tracking-tight text-ivory opacity-0 md:text-7xl">
         ویستا
       </h1>
-      <div id="intro-line" class="mt-5 h-px w-0 bg-gradient-to-l from-transparent via-gold to-transparent"></div>
-      <p id="intro-sub" class="mt-4 text-xs tracking-[0.5em] text-gold opacity-0">V I S T A</p>
+      <div id="intro-line" class="mt-6 h-px w-0 bg-gradient-to-l from-transparent via-gold to-transparent"></div>
+      <p id="intro-sub" class="mt-5 text-xs tracking-[0.5em] text-gold opacity-0">V I S T A</p>
     </div>
     <button id="intro-skip" class="absolute bottom-8 text-xs text-muted transition-colors hover:text-gold">
       رد شدن
     </button>
   </div>
 
-  <!-- ═══ Hero ═══ -->
-  <section class="relative flex min-h-svh items-end overflow-hidden">
-    <div class="absolute inset-0">
-      <img
-        id="hero-img"
-        src={url('/img/hero.jpg')}
-        alt="عمارتی لوکس در گرگ‌ومیش"
-        class="h-full w-full scale-105 object-cover"
-        fetchpriority="high"
-        decoding="async"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-night via-night/35 to-night/60"></div>
-      <div class="absolute inset-0 bg-gradient-to-l from-night/55 via-transparent to-transparent"></div>
-    </div>
+  <!-- ═══ Hero — طرح ویلا «ساخته» می‌شود و با اسکرول واقعی می‌شود (Navana-style) ═══ -->
+  <section id="build-hero" class="relative h-svh overflow-hidden bg-night">
+    <img
+      id="bh-sketch"
+      src={url('/img/hero-sketch.jpg')}
+      alt=""
+      aria-hidden="true"
+      fetchpriority="high"
+      decoding="async"
+      class="absolute inset-0 h-full w-full object-cover"
+      style="clip-path: inset(100% 0% 0% 0%)"
+    />
+    <img
+      id="bh-photo"
+      src={url('/img/hero-villa.jpg')}
+      alt="ویلایی مدرن در گرگ‌ومیش با استخر روشن"
+      loading="eager"
+      decoding="async"
+      class="absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-0"
+    />
+    <div class="fog-layer fog-a !opacity-20" aria-hidden="true"></div>
+    <div class="fog-layer fog-b !opacity-20" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-night via-transparent to-night/45"></div>
 
-    <div class="container-v relative z-10 pb-24 pt-40 md:pb-32">
-      <p class="eyebrow mb-5" data-reveal>املاک لوکس ویستا</p>
-      <h1 class="font-display max-w-3xl text-4xl font-extrabold leading-[1.25] md:text-6xl md:leading-[1.2]" data-reveal data-reveal-delay="120">
-        چشم‌اندازی نو به <span class="text-gold-bright">زندگیِ لوکس</span>
-      </h1>
-      <p class="mt-6 max-w-xl text-base leading-8 text-ivory/80 md:text-lg" data-reveal data-reveal-delay="240">
-        مجموعه‌ای گزیده از ویلاها، پنت‌هاوس‌ها و آپارتمان‌های خاص — با تور مجازی ۳۶۰ درجه، پیش از بازدید، آنجا قدم بزنید.
-      </p>
-      <div class="mt-9 flex flex-wrap gap-4" data-reveal data-reveal-delay="360">
-        <a href={url('/properties')} class="btn-gold">مشاهده املاک</a>
-        <a href={url('/tours')} class="btn-ghost">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="9"></circle>
-            <ellipse cx="12" cy="12" rx="9" ry="3.5"></ellipse>
-          </svg>
-          تور مجازی ۳۶۰°
-        </a>
+    <div id="bh-content" class="pointer-events-none absolute inset-x-0 bottom-0 opacity-0">
+      <div class="container-v pb-24 md:pb-28">
+        <p class="eyebrow mb-5">املاک لوکس ویستا</p>
+        <h1 class="font-display max-w-3xl text-4xl font-extrabold leading-[1.25] md:text-6xl md:leading-[1.2]">
+          چشم‌اندازی نو به <span class="text-gold-bright">زندگیِ لوکس</span>
+        </h1>
+        <p class="mt-6 max-w-xl text-base leading-8 text-ivory/80 md:text-lg">
+          مجموعه‌ای گزیده از ویلاها، پنت‌هاوس‌ها و آپارتمان‌های خاص — با تور مجازی ۳۶۰ درجه، پیش از بازدید، آنجا قدم بزنید.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-4">
+          <a href={url('/properties')} class="btn-gold">مشاهده املاک</a>
+          <a href={url('/tours')} class="btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+              <ellipse cx="12" cy="12" rx="9" ry="3.5"></ellipse>
+            </svg>
+            تور مجازی ۳۶۰°
+          </a>
+        </div>
       </div>
     </div>
 
-    <div class="absolute bottom-7 left-1/2 z-10 -translate-x-1/2 animate-bounce text-gold/70" aria-hidden="true">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+    <p
+      id="bh-hint"
+      class="absolute bottom-7 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 text-xs text-gold/80"
+    >
+      <svg class="animate-bounce" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
         <path d="M12 5v14m0 0l-6-6m6 6l6-6"></path>
       </svg>
-    </div>
+      اسکرول کنید — طرح، واقعی می‌شود
+    </p>
   </section>
 
   <!-- ═══ Featured properties ═══ -->
@@ -344,24 +333,19 @@ const FEED = [
       intro.remove();
       document.documentElement.style.overflow = '';
       sessionStorage.setItem('vista-intro', '1');
+      // هیروی «ساخت» منتظر پایان اینترو است
+      (window as any).__vistaIntroDone = true;
+      dispatchEvent(new Event('vista:intro-done'));
     };
     if (seen || reduced) {
       finish();
     } else {
       document.documentElement.style.overflow = 'hidden';
-      // طرح ویلا خط‌به‌خط ترسیم می‌شود (stroke-dash) و بعد لوگو می‌آید
-      const paths = intro.querySelectorAll<SVGGeometryElement>('.bp');
-      paths.forEach((p) => {
-        const len = p.getTotalLength() + 2;
-        p.style.strokeDasharray = `${len}`;
-        p.style.strokeDashoffset = `${len}`;
-      });
       // تا وقتی تب دیده نشده، اینترو شروع نشود (rAF در تب مخفی ترول می‌شود)
-      const tl = gsap.timeline({ paused: true, onComplete: () => gsap.delayedCall(0.3, close) });
-      tl.to(paths, { strokeDashoffset: 0, duration: 0.55, stagger: 0.14, ease: 'power1.inOut' })
-        .to('#intro-word', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', startAt: { y: 14 } }, '-=0.3')
-        .to('#intro-line', { width: Math.min(360, innerWidth * 0.6), duration: 0.7, ease: 'power3.inOut' }, '<0.1')
-        .to('#intro-sub', { opacity: 1, duration: 0.4 }, '-=0.2');
+      const tl = gsap.timeline({ paused: true, onComplete: () => gsap.delayedCall(0.25, close) });
+      tl.to('#intro-word', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', startAt: { y: 16 } })
+        .to('#intro-line', { width: Math.min(360, innerWidth * 0.6), duration: 0.7, ease: 'power3.inOut' }, '-=0.3')
+        .to('#intro-sub', { opacity: 1, duration: 0.4 }, '-=0.25');
       function close() {
         gsap.to(intro, { yPercent: -100, duration: 0.85, ease: 'power4.inOut', onComplete: finish });
       }
@@ -390,9 +374,40 @@ const FEED = [
     }
   }
 
-  /* ── hero slow zoom ── */
-  if (!reduced) {
-    gsap.to('#hero-img', { scale: 1, duration: 2.4, ease: 'power2.out' });
+  /* ── build hero: طرح از پایین «ساخته» می‌شود؛ اسکرول آن را واقعی می‌کند ── */
+  const sketch = document.getElementById('bh-sketch');
+  const photo = document.getElementById('bh-photo');
+  const bhContent = document.getElementById('bh-content');
+  const bhHint = document.getElementById('bh-hint');
+  if (sketch && photo && bhContent) {
+    if (reduced) {
+      sketch.remove();
+      bhHint?.remove();
+      gsap.set(photo, { opacity: 1, scale: 1 });
+      gsap.set(bhContent, { opacity: 1, pointerEvents: 'auto' });
+    } else {
+      // فاز ۱: ترسیم خودکار طرح، از پی تا سقف (بعد از بسته شدن اینترو)
+      const draw = gsap.to(sketch, {
+        clipPath: 'inset(0% 0% 0% 0%)',
+        duration: 2.1,
+        ease: 'power2.inOut',
+        paused: true,
+        delay: 0.15,
+      });
+      if ((window as any).__vistaIntroDone || !document.getElementById('intro')) draw.play();
+      else addEventListener('vista:intro-done', () => draw.play(), { once: true });
+
+      // فاز ۲: با اسکرول، طرح به عکس واقعی تبدیل می‌شود (pin + scrub)
+      gsap
+        .timeline({
+          scrollTrigger: { trigger: '#build-hero', start: 'top top', end: '+=150%', scrub: 0.5, pin: true },
+          defaults: { ease: 'none' },
+        })
+        .to(photo, { opacity: 1, scale: 1, duration: 0.55 }, 0.05)
+        .to(bhHint, { opacity: 0, duration: 0.1 }, 0.35)
+        .to(sketch, { opacity: 0, duration: 0.22 }, 0.48)
+        .to(bhContent, { opacity: 1, pointerEvents: 'auto', duration: 0.25 }, 0.7);
+    }
   }
 
   /* ── center-expand feed ── */
