@@ -18,6 +18,12 @@ export interface Property {
   /** اسلاگ تور ۳۶۰ اگر موجود باشد */
   tour?: string;
   featured?: boolean;
+  /**
+   * فقط وقتی true باشد که عکس «شب واقعی» همان ساختمان موجود است
+   * (public/img/props/{slug}/night.jpg). در این صورت هاور روی هیروی
+   * صفحه جزئیات، نمای شب را نشان می‌دهد؛ وگرنه هیچ افکتی اعمال نمی‌شود.
+   */
+  nightPhoto?: boolean;
 }
 
 export const PROPERTIES: Property[] = [

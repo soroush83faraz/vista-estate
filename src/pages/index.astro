@@ -1,10 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import PropertyCard from '../components/PropertyCard.astro';
-import { featured, bySlug } from '../data/properties';
+import { PROPERTIES, featured, bySlug } from '../data/properties';
 import { SITE, url, faNum } from '../lib/site';
 
-const fogProp = bySlug('lavasan-villa')!;
+// بخش «مه و شب» فقط وقتی نمایش داده می‌شود که ملکی عکس شب واقعی داشته باشد
+const fogProp = PROPERTIES.find((p) => p.nightPhoto);
 
 const FEED = [
   { src: '/img/props/lavasan-villa/1.jpg', title: 'ویلا دوبلکس لواسان', sub: 'نمای شیشه‌ای رو به کوهستان' },
@@ -15,20 +16,45 @@ const FEED = [
 ---
 
 <Base intro>
-  <!-- ═══ Cinematic intro — «افق» (plays once per session) ═══ -->
+  <!-- ═══ Cinematic intro — طرح ویلا خط‌به‌خط «ساخته» می‌شود (plays once per session) ═══ -->
   <div
     slot="intro"
     id="intro"
     class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-night"
     aria-hidden="true"
   >
-    <div class="relative flex flex-col items-center">
-      <div id="intro-orb" class="mb-6 h-3 w-3 rounded-full bg-gold opacity-0 shadow-[0_0_40px_10px_rgba(201,164,106,0.45)]"></div>
-      <h1 id="intro-word" class="font-display text-5xl font-extrabold tracking-tight text-ivory md:text-7xl">
-        {['و', 'ی', 'س', 'ت', 'ا'].map((ch) => <span class="intro-ch inline-block opacity-0">{ch}</span>)}
+    <div class="relative flex w-full max-w-2xl flex-col items-center px-6">
+      <svg id="intro-svg" viewBox="0 0 640 360" fill="none" class="w-full max-w-xl" aria-hidden="true">
+        <!-- خط افق -->
+        <path class="bp" d="M20 300 H620" stroke="#c9a46a" stroke-width="2.5" stroke-linecap="round" />
+        <!-- حجم همکف -->
+        <path class="bp" d="M120 300 V215 H430 V300" stroke="#c9a46a" stroke-width="2" stroke-linecap="round" />
+        <!-- دیوار شیشه‌ای همکف -->
+        <path class="bp" d="M155 215 V300 M195 215 V300 M235 215 V300 M275 215 V300" stroke="#8a7148" stroke-width="1.5" />
+        <!-- در ورودی -->
+        <path class="bp" d="M330 300 V240 H375 V300" stroke="#c9a46a" stroke-width="2" />
+        <!-- حجم طبقه بالا -->
+        <path class="bp" d="M100 215 V140 H360 V215" stroke="#c9a46a" stroke-width="2" />
+        <!-- تیغه سقف -->
+        <path class="bp" d="M80 140 H385" stroke="#c9a46a" stroke-width="3" stroke-linecap="round" />
+        <!-- باکس روف -->
+        <path class="bp" d="M315 140 V118 H348 V140" stroke="#8a7148" stroke-width="1.8" />
+        <!-- پنجره نواری طبقه بالا -->
+        <path class="bp" d="M118 165 H342 M118 193 H342" stroke="#8a7148" stroke-width="1.5" />
+        <path class="bp" d="M172 165 V193 M226 165 V193 M280 165 V193" stroke="#8a7148" stroke-width="1.2" />
+        <!-- استخر -->
+        <path class="bp" d="M448 291 H612 M462 296 H598" stroke="#8a7148" stroke-width="1.6" stroke-linecap="round" />
+        <!-- درخت -->
+        <path class="bp" d="M545 300 V266" stroke="#c9a46a" stroke-width="2" />
+        <path class="bp" d="M545 266 C523 268 514 240 534 231 C538 207 572 207 577 230 C598 238 590 267 566 265 C560 268 551 268 545 266 Z" stroke="#c9a46a" stroke-width="1.8" />
+        <!-- ماه -->
+        <circle class="bp" cx="512" cy="84" r="15" stroke="#e6cc96" stroke-width="1.8" />
+      </svg>
+      <h1 id="intro-word" class="font-display mt-8 text-5xl font-extrabold tracking-tight text-ivory opacity-0 md:text-6xl">
+        ویستا
       </h1>
-      <div id="intro-line" class="mt-6 h-px w-0 bg-gradient-to-l from-transparent via-gold to-transparent"></div>
-      <p id="intro-sub" class="mt-5 text-xs tracking-[0.5em] text-gold opacity-0">V I S T A</p>
+      <div id="intro-line" class="mt-5 h-px w-0 bg-gradient-to-l from-transparent via-gold to-transparent"></div>
+      <p id="intro-sub" class="mt-4 text-xs tracking-[0.5em] text-gold opacity-0">V I S T A</p>
     </div>
     <button id="intro-skip" class="absolute bottom-8 text-xs text-muted transition-colors hover:text-gold">
       رد شدن
@@ -123,44 +149,58 @@ const FEED = [
     </div>
   </section>
 
-  <!-- ═══ Fog / night-reveal (Navana-inspired, our own take) ═══ -->
-  <section class="container-v mt-28 md:mt-40">
-    <div class="mb-10 max-w-xl">
-      <p class="eyebrow mb-3" data-reveal>تجربه ویستا</p>
-      <h2 class="font-display text-3xl font-bold md:text-4xl" data-reveal data-reveal-delay="100">
-        مه را کنار بزنید، <span class="text-gold-bright">شب را ببینید</span>
-      </h2>
-      <p class="mt-4 text-sm leading-7 text-muted" data-reveal data-reveal-delay="200">
-        نشان‌گر را روی تصویر حرکت دهید — چراغ‌های ویلا روشن می‌شوند و نمای شب از پس مه پیدا می‌شود.
-      </p>
-    </div>
-
-    <div
-      id="fog-stage"
-      class="group relative aspect-[16/9] cursor-crosshair overflow-hidden rounded-3xl md:aspect-[21/9]"
-      data-reveal
-    >
-      <img src={url(`/img/props/${fogProp.slug}/cover.jpg`)} alt={fogProp.title} loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" />
-      <img
-        id="fog-night"
-        src={url(`/img/props/${fogProp.slug}/night.jpg`)}
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        class="absolute inset-0 h-full w-full object-cover"
-      />
-      <div class="fog-layer fog-a" aria-hidden="true"></div>
-      <div class="fog-layer fog-b" aria-hidden="true"></div>
-      <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-night/80 to-transparent p-6 md:p-8">
-        <div>
-          <h3 class="font-display text-xl font-bold">{fogProp.title}</h3>
-          <p class="mt-1 text-sm text-ivory/70">{fogProp.location}</p>
+  <!-- ═══ Fog / night-reveal — فقط با عکس شب واقعی (Navana-inspired, our own take) ═══ -->
+  {
+    fogProp && (
+      <section class="container-v mt-28 md:mt-40">
+        <div class="mb-10 max-w-xl">
+          <p class="eyebrow mb-3" data-reveal>
+            تجربه ویستا
+          </p>
+          <h2 class="font-display text-3xl font-bold md:text-4xl" data-reveal data-reveal-delay="100">
+            مه را کنار بزنید، <span class="text-gold-bright">شب را ببینید</span>
+          </h2>
+          <p class="mt-4 text-sm leading-7 text-muted" data-reveal data-reveal-delay="200">
+            نشان‌گر را روی تصویر حرکت دهید — چراغ‌های ویلا روشن می‌شوند و نمای شب از پس مه پیدا می‌شود.
+          </p>
         </div>
-        <a href={url(`/properties/${fogProp.slug}`)} class="btn-gold pointer-events-auto !px-5 !py-2 text-sm">جزئیات ملک</a>
-      </div>
-    </div>
-  </section>
+
+        <div
+          id="fog-stage"
+          class="group relative aspect-[16/9] cursor-crosshair overflow-hidden rounded-3xl md:aspect-[21/9]"
+          data-reveal
+        >
+          <img
+            src={url(`/img/props/${fogProp.slug}/cover.jpg`)}
+            alt={fogProp.title}
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <img
+            id="fog-night"
+            src={url(`/img/props/${fogProp.slug}/night.jpg`)}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <div class="fog-layer fog-a" aria-hidden="true" />
+          <div class="fog-layer fog-b" aria-hidden="true" />
+          <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-night/80 to-transparent p-6 md:p-8">
+            <div>
+              <h3 class="font-display text-xl font-bold">{fogProp.title}</h3>
+              <p class="mt-1 text-sm text-ivory/70">{fogProp.location}</p>
+            </div>
+            <a href={url(`/properties/${fogProp.slug}`)} class="btn-gold pointer-events-auto !px-5 !py-2 text-sm">
+              جزئیات ملک
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   <!-- ═══ Stats ═══ -->
   <section class="container-v mt-28">
@@ -309,12 +349,19 @@ const FEED = [
       finish();
     } else {
       document.documentElement.style.overflow = 'hidden';
+      // طرح ویلا خط‌به‌خط ترسیم می‌شود (stroke-dash) و بعد لوگو می‌آید
+      const paths = intro.querySelectorAll<SVGGeometryElement>('.bp');
+      paths.forEach((p) => {
+        const len = p.getTotalLength() + 2;
+        p.style.strokeDasharray = `${len}`;
+        p.style.strokeDashoffset = `${len}`;
+      });
       // تا وقتی تب دیده نشده، اینترو شروع نشود (rAF در تب مخفی ترول می‌شود)
-      const tl = gsap.timeline({ paused: true, onComplete: () => gsap.delayedCall(0.2, close) });
-      tl.to('#intro-line', { width: Math.min(420, innerWidth * 0.7), duration: 0.9, ease: 'power3.inOut' })
-        .to('#intro-orb', { opacity: 1, y: -8, duration: 0.55, ease: 'power2.out' }, '-=0.35')
-        .to('.intro-ch', { opacity: 1, y: 0, stagger: 0.07, duration: 0.5, ease: 'power2.out', startAt: { y: 18 } }, '-=0.3')
-        .to('#intro-sub', { opacity: 1, duration: 0.45 }, '-=0.15');
+      const tl = gsap.timeline({ paused: true, onComplete: () => gsap.delayedCall(0.3, close) });
+      tl.to(paths, { strokeDashoffset: 0, duration: 0.55, stagger: 0.14, ease: 'power1.inOut' })
+        .to('#intro-word', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', startAt: { y: 14 } }, '-=0.3')
+        .to('#intro-line', { width: Math.min(360, innerWidth * 0.6), duration: 0.7, ease: 'power3.inOut' }, '<0.1')
+        .to('#intro-sub', { opacity: 1, duration: 0.4 }, '-=0.2');
       function close() {
         gsap.to(intro, { yPercent: -100, duration: 0.85, ease: 'power4.inOut', onComplete: finish });
       }
@@ -333,13 +380,13 @@ const FEED = [
         tl.kill();
         close();
       });
-      // فال‌بک: هر اتفاقی افتاد، حداکثر ۶ ثانیه بعد از شروع، اینترو کنار می‌رود
+      // فال‌بک: هر اتفاقی افتاد، اینترو حتماً کنار می‌رود
       setTimeout(() => {
         if (document.getElementById('intro')) {
           tl.kill();
           close();
         }
-      }, 6500);
+      }, 9000);
     }
   }
 

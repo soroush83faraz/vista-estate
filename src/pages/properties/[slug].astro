@@ -31,14 +31,18 @@ const SPECS = [
         fetchpriority="high"
         decoding="async"
       />
-      <img
-        src={url(`/img/props/${p.slug}/night.jpg`)}
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1400ms] ease-out group-hover:opacity-100"
-      />
+      {
+        p.nightPhoto && (
+          <img
+            src={url(`/img/props/${p.slug}/night.jpg`)}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-[1400ms] ease-out group-hover:opacity-100"
+          />
+        )
+      }
       <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-night via-night/25 to-night/45"></div>
 
       <div class="absolute inset-x-0 bottom-0">
@@ -59,9 +63,13 @@ const SPECS = [
         </div>
       </div>
 
-      <span class="absolute top-24 left-6 hidden rounded-full bg-night/60 px-3 py-1.5 text-xs text-ivory/70 backdrop-blur transition-opacity duration-500 group-hover:opacity-0 md:block">
-        🌙 برای دیدن نمای شب، نشان‌گر را نگه دارید
-      </span>
+      {
+        p.nightPhoto && (
+          <span class="absolute top-24 left-6 hidden rounded-full bg-night/60 px-3 py-1.5 text-xs text-ivory/70 backdrop-blur transition-opacity duration-500 group-hover:opacity-0 md:block">
+            🌙 برای دیدن نمای شب، نشان‌گر را نگه دارید
+          </span>
+        )
+      }
     </div>
   </section>
 
