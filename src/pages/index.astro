@@ -37,16 +37,23 @@ const FEED = [
 
   <!-- ═══ Hero — طرح ویلا «ساخته» می‌شود و با اسکرول واقعی می‌شود (Navana-style) ═══ -->
   <section id="build-hero" class="relative h-svh overflow-hidden bg-night">
-    <img
-      id="bh-sketch"
-      src={url('/img/hero-sketch.jpg')}
-      alt=""
-      aria-hidden="true"
-      fetchpriority="high"
-      decoding="async"
-      class="absolute inset-0 h-full w-full object-cover"
-      style="clip-path: inset(100% 0% 0% 0%)"
-    />
+    <div id="bh-sketchwrap" class="absolute inset-0" style="clip-path: inset(100% 0% 0% 0%)" aria-hidden="true">
+      <img
+        id="bh-sketch-rough"
+        src={url('/img/hero-sketch-rough.jpg')}
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+      <img
+        id="bh-sketch"
+        src={url('/img/hero-sketch.jpg')}
+        alt=""
+        decoding="async"
+        class="absolute inset-0 h-full w-full object-cover opacity-0"
+      />
+    </div>
     <img
       id="bh-photo"
       src={url('/img/hero-villa.jpg')}
@@ -382,29 +389,27 @@ const FEED = [
   }
 
   /* ── build hero: طرح از پایین «ساخته» می‌شود؛ اسکرول آن را واقعی می‌کند ── */
-  const sketch = document.getElementById('bh-sketch');
+  const sketchWrap = document.getElementById('bh-sketchwrap');
   const photo = document.getElementById('bh-photo');
   const bhContent = document.getElementById('bh-content');
   const bhHint = document.getElementById('bh-hint');
-  if (sketch && photo && bhContent) {
+  if (sketchWrap && photo && bhContent) {
     if (reduced) {
-      sketch.remove();
+      sketchWrap.remove();
       bhHint?.remove();
       gsap.set(photo, { '--mp': '115%', scale: 1 });
       gsap.set(bhContent, { opacity: 1, pointerEvents: 'auto' });
     } else {
-      // فاز ۱: ترسیم خودکار طرح، از پی تا سقف (بعد از بسته شدن اینترو)
-      const draw = gsap.to(sketch, {
-        clipPath: 'inset(0% 0% 0% 0%)',
-        duration: 2.1,
-        ease: 'power2.inOut',
-        paused: true,
-        delay: 0.15,
-      });
+      // فاز ۱ (خودکار، بعد از اینترو): خطوط اصلی سازه از پی تا سقف کشیده می‌شوند،
+      // بعد جزئیات نقشه رویشان «جمع» می‌شود
+      const draw = gsap
+        .timeline({ paused: true, delay: 0.15 })
+        .to(sketchWrap, { clipPath: 'inset(0% 0% 0% 0%)', duration: 2.1, ease: 'power2.inOut' })
+        .to('#bh-sketch', { opacity: 1, duration: 1.3, ease: 'power1.inOut' }, '-=1.2');
       if ((window as any).__vistaIntroDone || !document.getElementById('intro')) draw.play();
       else addEventListener('vista:intro-done', () => draw.play(), { once: true });
 
-      // فاز ۲: با اسکرول، طرح به عکس واقعی تبدیل می‌شود (pin + scrub)
+      // فاز ۲: با اسکرول، طرح طبقه‌به‌طبقه به عکس واقعی تبدیل می‌شود (pin + scrub)
       gsap
         .timeline({
           scrollTrigger: { trigger: '#build-hero', start: 'top top', end: '+=150%', scrub: 0.5, pin: true },
@@ -412,7 +417,7 @@ const FEED = [
         })
         .to(photo, { '--mp': '115%', scale: 1, duration: 0.6 }, 0.05)
         .to(bhHint, { opacity: 0, duration: 0.1 }, 0.35)
-        .to(sketch, { opacity: 0, duration: 0.22 }, 0.5)
+        .to(sketchWrap, { opacity: 0, duration: 0.22 }, 0.5)
         .to(bhContent, { opacity: 1, pointerEvents: 'auto', duration: 0.25 }, 0.7);
     }
   }

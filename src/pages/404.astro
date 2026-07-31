@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+---
+
+<Base title="پیدا نشد" description="صفحه موردنظر پیدا نشد.">
+  <section class="container-v flex min-h-svh flex-col items-center justify-center text-center">
+    <p class="eyebrow mb-4">خطای ۴۰۴</p>
+    <h1 class="font-display text-4xl font-extrabold md:text-6xl">این چشم‌انداز وجود ندارد</h1>
+    <p class="mt-5 max-w-md text-sm leading-8 text-muted">
+      صفحه‌ای که دنبالش بودید جابه‌جا شده یا از اول وجود نداشته. بیایید از یک منظره بهتر شروع کنیم.
+    </p>
+    <div class="mt-9 flex flex-wrap justify-center gap-4">
+      <a href={url('/')} class="btn-gold">بازگشت به خانه</a>
+      <a href={url('/properties')} class="btn-ghost">دیدن املاک</a>
+    </div>
+  </section>
+</Base>
