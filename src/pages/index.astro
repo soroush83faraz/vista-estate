@@ -50,10 +50,10 @@ const FEED = [
     <img
       id="bh-photo"
       src={url('/img/hero-villa.jpg')}
-      alt="ویلایی مدرن در گرگ‌ومیش با استخر روشن"
+      alt="ویلایی مدرن با استخر"
       loading="eager"
       decoding="async"
-      class="absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-0"
+      class="absolute inset-0 h-full w-full scale-[1.06] object-cover"
     />
     <div class="fog-layer fog-a !opacity-20" aria-hidden="true"></div>
     <div class="fog-layer fog-b !opacity-20" aria-hidden="true"></div>
@@ -266,6 +266,13 @@ const FEED = [
 </Base>
 
 <style>
+  /* عکس هیرو با ماسک از پایین به بالا «ماتریالایز» می‌شود (طبقه‌به‌طبقه) */
+  #bh-photo {
+    --mp: 0%;
+    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--mp) - 15%), transparent var(--mp));
+    mask-image: linear-gradient(to top, #000 calc(var(--mp) - 15%), transparent var(--mp));
+  }
+
   /* feed frames start "closed from the center" — GSAP scrubs them open */
   @media (prefers-reduced-motion: no-preference) {
     .feed-frame {
@@ -383,7 +390,7 @@ const FEED = [
     if (reduced) {
       sketch.remove();
       bhHint?.remove();
-      gsap.set(photo, { opacity: 1, scale: 1 });
+      gsap.set(photo, { '--mp': '115%', scale: 1 });
       gsap.set(bhContent, { opacity: 1, pointerEvents: 'auto' });
     } else {
       // فاز ۱: ترسیم خودکار طرح، از پی تا سقف (بعد از بسته شدن اینترو)
@@ -403,9 +410,9 @@ const FEED = [
           scrollTrigger: { trigger: '#build-hero', start: 'top top', end: '+=150%', scrub: 0.5, pin: true },
           defaults: { ease: 'none' },
         })
-        .to(photo, { opacity: 1, scale: 1, duration: 0.55 }, 0.05)
+        .to(photo, { '--mp': '115%', scale: 1, duration: 0.6 }, 0.05)
         .to(bhHint, { opacity: 0, duration: 0.1 }, 0.35)
-        .to(sketch, { opacity: 0, duration: 0.22 }, 0.48)
+        .to(sketch, { opacity: 0, duration: 0.22 }, 0.5)
         .to(bhContent, { opacity: 1, pointerEvents: 'auto', duration: 0.25 }, 0.7);
     }
   }
