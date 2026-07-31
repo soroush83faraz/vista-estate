@@ -36,6 +36,7 @@ const NAV = [
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    {Astro.site && <meta property="og:image" content={new URL(url('/img/hero-villa.jpg'), Astro.site).href} />}
     <title>{pageTitle}</title>
   </head>
   <body>
