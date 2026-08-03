@@ -35,15 +35,13 @@ const FEED = [
     </button>
   </div>
 
-  <!-- ═══ Hero — ویدیوی تمام‌صفحه ویستا (بعد از اینترو، بی‌صدا و لوپ) ═══ -->
+  <!-- ═══ Hero — ویدیوی تمام‌صفحه ویستا؛ با اسکرول جلو می‌رود (Apple-style scrub) ═══ -->
   <section id="build-hero" class="relative h-svh overflow-hidden bg-night">
     <video
       id="bh-video"
       src={url('/media/vista-demo.mp4')}
       poster={url('/img/hero-villa.jpg')}
-      autoplay
       muted
-      loop
       playsinline
       preload="auto"
       aria-label="ویدیوی معرفی املاک ویستا"
@@ -366,33 +364,43 @@ const FEED = [
     }
   }
 
-  /* ── hero video: بعد از اینترو، متن و دکمه‌ها روی ویدیو ظاهر می‌شوند ── */
+  /* ── hero video: اسکرول، ویدیو را جلو/عقب می‌برد (Apple-style scrub) ── */
   const bhVideo = document.getElementById('bh-video') as HTMLVideoElement | null;
   const bhContent = document.getElementById('bh-content');
   const bhHint = document.getElementById('bh-hint');
-  if (bhContent) {
-    if (reduced) {
-      // بدون حرکت: ویدیو پخش نمی‌شود، پوستر می‌ماند و محتوا از اول دیده می‌شود
-      bhVideo?.removeAttribute('autoplay');
-      bhVideo?.pause();
+  if (bhVideo && bhContent) {
+    const staticHero = () => {
+      // فال‌بک بدون اسکراب: پوستر/فریم اول می‌ماند و محتوا دیده می‌شود
       bhHint?.remove();
       gsap.set(bhContent, { opacity: 1, pointerEvents: 'auto' });
+    };
+    if (reduced) {
+      staticHero();
     } else {
-      // اگر مرورگر پخش خودکار را نگه داشته بود، دوباره تلاش کن
-      bhVideo?.play().catch(() => {});
-      const show = () =>
-        gsap.to(bhContent, { opacity: 1, pointerEvents: 'auto', duration: 0.9, ease: 'power2.out', delay: 0.2 });
-      if ((window as any).__vistaIntroDone || !document.getElementById('intro')) show();
-      else addEventListener('vista:intro-done', show, { once: true });
+      // iOS تا اولین لمس اجازه بافر نمی‌دهد — یک play/pause کوتاه بافر را باز می‌کند
+      const prime = () => bhVideo.play().then(() => bhVideo.pause()).catch(() => {});
+      addEventListener('touchstart', prime, { once: true, passive: true });
 
-      // راهنمای اسکرول با شروع اسکرول محو می‌شود
-      if (bhHint) {
-        gsap.to(bhHint, {
-          opacity: 0,
-          ease: 'none',
-          scrollTrigger: { trigger: '#build-hero', start: '2% top', end: '20% top', scrub: 0.4 },
-        });
-      }
+      let scrubbed = false;
+      const buildScrub = () => {
+        if (scrubbed) return;
+        scrubbed = true;
+        gsap
+          .timeline({
+            scrollTrigger: { trigger: '#build-hero', start: 'top top', end: '+=250%', scrub: 0.5, pin: true },
+            defaults: { ease: 'none' },
+          })
+          .to(bhVideo, { currentTime: bhVideo.duration, duration: 1 }, 0)
+          .to(bhHint, { opacity: 0, duration: 0.08 }, 0.03)
+          .to(bhContent, { opacity: 1, pointerEvents: 'auto', duration: 0.2 }, 0.78);
+      };
+      if (bhVideo.readyState >= 1) buildScrub();
+      else bhVideo.addEventListener('loadedmetadata', buildScrub, { once: true });
+      // اگر متادیتا نیامد (خطای شبکه و…)، هیرو بدون اسکراب بالا بیاید
+      bhVideo.addEventListener('error', () => !scrubbed && staticHero(), { once: true });
+      setTimeout(() => {
+        if (!scrubbed && bhVideo.readyState < 1) staticHero();
+      }, 6000);
     }
   }
 
