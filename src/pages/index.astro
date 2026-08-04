@@ -369,8 +369,12 @@ const FEED = [
   const bhContent = document.getElementById('bh-content');
   const bhHint = document.getElementById('bh-hint');
   if (bhVideo && bhContent) {
+    let scrubbed = false;
+    let fellBack = false;
     const staticHero = () => {
       // فال‌بک بدون اسکراب: پوستر/فریم اول می‌ماند و محتوا دیده می‌شود
+      if (scrubbed || fellBack) return;
+      fellBack = true;
       bhHint?.remove();
       gsap.set(bhContent, { opacity: 1, pointerEvents: 'auto' });
     };
@@ -381,9 +385,11 @@ const FEED = [
       const prime = () => bhVideo.play().then(() => bhVideo.pause()).catch(() => {});
       addEventListener('touchstart', prime, { once: true, passive: true });
 
-      let scrubbed = false;
       const buildScrub = () => {
-        if (scrubbed) return;
+        if (scrubbed || fellBack) return;
+        // اگر متادیتا آن‌قدر دیر رسید که کاربر رفته پایین، pin دیگر جا ندارد —
+        // وسط خواندن صفحه ۲۵۰vh فاصله اضافه نکنیم
+        if (scrollY > innerHeight * 0.5) return staticHero();
         scrubbed = true;
         gsap
           .timeline({
@@ -393,11 +399,14 @@ const FEED = [
           .to(bhVideo, { currentTime: bhVideo.duration, duration: 1 }, 0)
           .to(bhHint, { opacity: 0, duration: 0.08 }, 0.03)
           .to(bhContent, { opacity: 1, pointerEvents: 'auto', duration: 0.2 }, 0.78);
+        // pin-spacer الان به DOM اضافه شد؛ تریگرهای بقیهٔ سکشن‌ها (فید و…)
+        // جای start/end خود را بدون آن حساب کرده‌اند — همه باید بازمحاسبه شوند
+        ScrollTrigger.refresh();
       };
       if (bhVideo.readyState >= 1) buildScrub();
       else bhVideo.addEventListener('loadedmetadata', buildScrub, { once: true });
       // اگر متادیتا نیامد (خطای شبکه و…)، هیرو بدون اسکراب بالا بیاید
-      bhVideo.addEventListener('error', () => !scrubbed && staticHero(), { once: true });
+      bhVideo.addEventListener('error', staticHero, { once: true });
       setTimeout(() => {
         if (!scrubbed && bhVideo.readyState < 1) staticHero();
       }, 6000);
